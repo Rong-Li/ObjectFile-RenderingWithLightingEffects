@@ -14,7 +14,7 @@ public class Client implements PageTurner {
 	private static final int ARGB_WHITE = 0xff_ff_ff_ff;
 	private static final int ARGB_GREEN = 0xff_00_ff_40;
 	
-	private static final int NUM_PAGES = 10;
+	private static final int NUM_PAGES = 16;
 	protected static final double GHOST_COVERAGE = 0.14;
 
 	private static final int NUM_PANELS = 4;
@@ -118,16 +118,22 @@ public class Client implements PageTurner {
 
 		switch(pageNumber) {
 
-			case 1:  filename = "pageA";	 break;
-			case 2:  filename = "pageB";	 break;
-			case 3:	 filename = "pageC";	 break;
-			case 4:  filename = "pageD";	 break;
-			case 5:  filename = "pageE";	 break;
-			case 6:  filename = "pageF";	 break;
-			case 7:  filename = "pageG";	 break;
-			case 8:  filename = "pageH";	 break;
-			case 9:  filename = "pageI";	 break;
-			case 0:  filename = "pageJ";	 break;
+			case 1:  filename = "page-a1";	 break;
+			case 2:  filename = "page-a2";	 break;
+			case 3:	 filename = "page-a3";	 break;
+			case 4:  filename = "page-b1";	 break;
+			case 5:  filename = "page-b2";	 break;
+			case 6:  filename = "page-b3";	 break;
+			case 7:  filename = "page-c1";	 break;
+			case 8:  filename = "page-c2";	 break;
+			case 9:  filename = "page-c3";	 break;
+			case 10:  filename = "page-d";	 break;
+			case 11:  filename = "page-e";	 break;
+			case 12:  filename = "page-f1";	 break;
+			case 13:  filename = "page-f2";	 break;
+			case 14:  filename = "page-g";	 break;
+			case 15:  filename = "page-h";	 break;
+			case 0:  filename = "page-i";	 break;
 
 			default: defaultPage();
 				return;
