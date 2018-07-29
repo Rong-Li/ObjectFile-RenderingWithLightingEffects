@@ -147,12 +147,12 @@ public class SimpInterpreter {
 
 
     private void interpretLight(String[] tokens) {
-        double r = cleanNumber(tokens[0]);
-        double g = cleanNumber(tokens[1]);
-        double b = cleanNumber(tokens[2]);
+        double r = cleanNumber(tokens[1]);
+        double g = cleanNumber(tokens[2]);
+        double b = cleanNumber(tokens[3]);
         Color I_light = new Color(r,g,b);
-        double A = cleanNumber(tokens[3]);
-        double B = cleanNumber(tokens[4]);
+        double A = cleanNumber(tokens[4]);
+        double B = cleanNumber(tokens[5]);
 
         Vertex3D origin = new Vertex3D(this.lightOrigin, defaultColor);
         Transformation vector = Transformation.vertexToVector(origin);
