@@ -52,6 +52,8 @@ public class SimpInterpreter {
     private ShaderStyle shaderStyle;
     private Light light;
     private Point3DH lightOrigin;
+    private double kSpecular = 0.3;
+    private double specularExponent = 8;
 
     public enum RenderStyle {
         FILLED,

@@ -255,22 +255,6 @@ public class Transformation {
         return result;
     }
 
-    public Transformation normalizeVector(){
-        //find ||v||
-        double sum = 0;
-        for (int i = 1; i < this.getRows()+1; i++){
-            double temp = this.get(i,1);
-            sum = sum + temp * temp;
-        }
-        double denominator = Math.sqrt(sum);
-        Transformation result = new Transformation(this.getRows(), 1);
-        for (int i = 1; i < result.getRows()+1; i++){
-            double temp = this.get(i,1) / denominator;
-            result.set(i,1,temp);
-        }
-        return result;
-    }
-
 
     public static Transformation identity(){
         Transformation result = new Transformation();
@@ -368,4 +352,50 @@ public class Transformation {
         DecimalFormat twoDForm = new DecimalFormat("#.##");
         return Double.valueOf(twoDForm.format(d));
     }
+
+
+
+    public Transformation normalizeVector(){
+        //find ||v||
+        double sum = 0;
+        for (int i = 1; i < this.getRows()+1; i++){
+            double temp = this.get(i,1);
+            sum = sum + temp * temp;
+        }
+        double denominator = Math.sqrt(sum);
+        Transformation result = new Transformation(this.getRows(), 1);
+        for (int i = 1; i < result.getRows()+1; i++){
+            double temp = this.get(i,1) / denominator;
+            result.set(i,1,temp);
+        }
+        return result;
+    }
+
+    //this * vector
+    public double dotProduct(Transformation vector){
+        double result = 0;
+        for (int i = 1; i < this.getRows(); i++){
+            result = result + this.get(i,1) * vector.get(i,1);
+        }
+        return result;
+    }
+
+    public Transformation scale(double scaler){
+        Transformation result = new Transformation(this.getRows(),this.getCols());
+        for (int i = 1; i < result.getRows()+1; i++){
+            double temp = scaler * this.get(i,1);
+            result.set(i,1,temp);
+        }
+        return result;
+    }
+    //this - a
+    public Transformation substract(Transformation a){
+        Transformation result = new Transformation(this.getRows(),this.getCols());
+        for (int i = 1; i < result.getRows()+1; i++){
+            double temp = this.get(i,1) - a.get(i,1);
+            result.set(i,1,temp);
+        }
+        return result;
+    }
+
 }
