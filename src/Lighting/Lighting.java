@@ -2,6 +2,7 @@ package Lighting;
 
 import geometry.Halfplane3DH;
 import geometry.Point3DH;
+import geometry.Transformation;
 import geometry.Vertex3D;
 import polygon.Polygon;
 import windowing.graphics.Color;
@@ -28,6 +29,7 @@ public class Lighting {
         // Color Ia from constructor
         Color Ii = this.light.getIntensity();
         double fatti = getfatti(this.light, cameraSpacePoint);
+        Transformation unitNormal = normal.getNormalVector().normalizeVector();
 
 
 

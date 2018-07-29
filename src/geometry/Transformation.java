@@ -255,6 +255,22 @@ public class Transformation {
         return result;
     }
 
+    public Transformation normalizeVector(){
+        //find ||v||
+        double sum = 0;
+        for (int i = 1; i < this.getRows()+1; i++){
+            double temp = this.get(i,1);
+            sum = sum + temp * temp;
+        }
+        double denominator = Math.sqrt(sum);
+        Transformation result = new Transformation(this.getRows(), 1);
+        for (int i = 1; i < result.getRows()+1; i++){
+            double temp = this.get(i,1) / denominator;
+            result.set(i,1,temp);
+        }
+        return result;
+    }
+
 
     public static Transformation identity(){
         Transformation result = new Transformation();
