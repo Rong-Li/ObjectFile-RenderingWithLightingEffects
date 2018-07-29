@@ -513,4 +513,18 @@ public class SimpInterpreter {
     public Drawable getDrawable() {
         return drawable;
     }
+    //limitation of being an triangular.
+    public Point3DH centerPointofPolygon(Polygon polygon){
+        if (polygon.length() != 3){
+            System.out.println("WRONG WRONG WRONG WRONG WRONG WRONG WRONG ");
+        }
+
+        double centerX = (polygon.get(0).getX() + polygon.get(1).getX() + polygon.get(2).getX()) / 3;
+        double centerY = (polygon.get(0).getY() + polygon.get(1).getY() + polygon.get(2).getY()) / 3;
+        double centerZ = (polygon.get(0).getZ() + polygon.get(1).getZ() + polygon.get(2).getZ()) / 3;
+
+        Point3DH result = new Point3DH(centerX,centerY,centerZ);
+
+        return result;
+    }
 }
