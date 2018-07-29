@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
+import Lighting.Light;
 import client.Clipper;
 import geometry.*;
 import geometry.Point3DH;
@@ -32,11 +33,6 @@ public class SimpInterpreter {
     private Transformation simplePerspectiveMatrix;
     private Stack<Transformation> matrixStack;
 
-    private static int WORLD_LOW_X = -100;
-    private static int WORLD_HIGH_X = 100;
-    private static int WORLD_LOW_Y = -100;
-    private static int WORLD_HIGH_Y = 100;
-
     private LineBasedReader reader;
     private Stack<LineBasedReader> readerStack;
 
@@ -53,10 +49,18 @@ public class SimpInterpreter {
     private Transformation cameraToScreen;
     private Clipper clipper;
     private Shader ambientShader;
+    private ShaderStyle shaderStyle;
+    private Light light;
+    private Point3DH lightOrigin;
 
     public enum RenderStyle {
         FILLED,
         WIREFRAME;
+    }
+    public enum ShaderStyle {
+        FLAT,
+        GOURAUD,
+        PHONG;
     }
     public SimpInterpreter(String filename, Drawable drawable, RendererTrio renderers) {
         this.drawable = drawable;
@@ -114,10 +118,13 @@ public class SimpInterpreter {
     }
     private void interpretCommand(String[] tokens) {
         switch(tokens[0]) {
-            case "{" :      push();   break;
-            case "}" :      pop();    break;
-            case "wire" :   wire();   break;
-            case "filled" : filled(); break;
+            case "{" :          push();     break;
+            case "}" :          pop();      break;
+            case "wire" :       wire();     break;
+            case "filled" :     filled();   break;
+            case "flat" :       flat();   break;
+            case "gouraud" :    gouraud();   break;
+            case "phong" :      phong();   break;
 
             case "file" :		interpretFile(tokens);		break;
             case "scale" :		interpretScale(tokens);		break;
@@ -130,11 +137,29 @@ public class SimpInterpreter {
             case "ambient" :	interpretAmbient(tokens);	break;
             case "depth" :		interpretDepth(tokens);		break;
     		case "obj" :		interpretObj(tokens);		break;
+    		case "light" :		interpretLight(tokens);		break;
 
             default :
                 System.err.println("bad input line: " + tokens);
                 break;
         }
+    }
+
+
+    private void interpretLight(String[] tokens) {
+        double r = cleanNumber(tokens[0]);
+        double g = cleanNumber(tokens[1]);
+        double b = cleanNumber(tokens[2]);
+        Color I_light = new Color(r,g,b);
+        double A = cleanNumber(tokens[3]);
+        double B = cleanNumber(tokens[4]);
+
+        Vertex3D origin = new Vertex3D(this.lightOrigin, defaultColor);
+        Transformation vector = Transformation.vertexToVector(origin);
+        vector = vector.matrixMultiplication(this.CTM);
+        Point3DH resultLocation = new Point3DH(vector.get(1,1), vector.get(2,1), vector.get(3,1));
+
+        this.light = new Light(I_light,resultLocation, A, B);
     }
 
     private void interpretObj(String[] tokens) {
@@ -152,8 +177,6 @@ public class SimpInterpreter {
     }
 
 
-
-
     private void push() {
         this.matrixStack.push(CTM);
     }
@@ -166,6 +189,9 @@ public class SimpInterpreter {
     private void filled() {
         this.renderStyle = RenderStyle.FILLED;
     }
+    private void phong() { this.shaderStyle = ShaderStyle.PHONG; }
+    private void gouraud() { this.shaderStyle = ShaderStyle.GOURAUD; }
+    private void flat() { this.shaderStyle = ShaderStyle.FLAT; }
 
     // this one is complete.
     private void interpretFile(String[] tokens) {
@@ -222,7 +248,6 @@ public class SimpInterpreter {
     private static double cleanNumber(String string) {
         return Double.parseDouble(string);
     }
-
     private enum VertexColors {
         COLORED(NUM_TOKENS_FOR_COLORED_VERTEX),
         UNCOLORED(NUM_TOKENS_FOR_UNCOLORED_VERTEX);
@@ -241,6 +266,7 @@ public class SimpInterpreter {
         lineRenderer.drawLine(vertices[0], vertices[1], this.drawable);
 
     }
+
     private void interpretPolygon(String[] tokens) {
         Vertex3D[] vertices = interpretVertices(tokens, 3, 1);
         for (int i = 0; i < 3; i++){
@@ -350,6 +376,7 @@ public class SimpInterpreter {
         //set clipper
         double hither = cleanNumber(tokens[5]);
         double yon = cleanNumber(tokens[6]);
+        this.lightOrigin = new Point3DH(xHigh-xLow, yHigh-yLow, hither);
         this.clipper = new Clipper(hither, yon, xLow, xHigh, yLow, yHigh);
         projectedToScreen = Transformation.identity();
         double scaleSize_X = 650/(xHigh - xLow);
@@ -481,22 +508,6 @@ public class SimpInterpreter {
 
     public Transformation getCTM() {
         return CTM;
-    }
-
-    public Clipper getClipper() {
-        return clipper;
-    }
-
-    public RenderStyle getRenderStyle() {
-        return renderStyle;
-    }
-
-    public PolygonRenderer getFilledRenderer() {
-        return filledRenderer;
-    }
-
-    public PolygonRenderer getWireframeRenderer() {
-        return wireframeRenderer;
     }
 
     public Drawable getDrawable() {
