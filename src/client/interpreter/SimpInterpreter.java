@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Stack;
 
 import Lighting.Light;
+import Lighting.Lighting;
 import client.Clipper;
 import geometry.*;
 import geometry.Point3DH;
@@ -54,6 +55,7 @@ public class SimpInterpreter {
     private Point3DH lightOrigin;
     private double kSpecular = 0.3;
     private double specularExponent = 8;
+    private Color lightColor;
 
     public enum RenderStyle {
         FILLED,
@@ -415,7 +417,6 @@ public class SimpInterpreter {
         double g = cleanNumber(tokens[2]);
         double b = cleanNumber(tokens[3]);
         ambientLight = new Color(r,g,b);
-        ambientShader = c -> ambientLight.multiply(c);
     }
 
 
@@ -460,6 +461,13 @@ public class SimpInterpreter {
     }
 
     public void RenderPolygon(Polygon polygon){
+        Point3DH centerPoint3DH = centerPointofPolygon(polygon);
+        Vertex3D centerPoint = new Vertex3D(centerPoint3DH, polygon.get(1).getColor());
+        Lighting lighting = new Lighting(this.light, polygon, ambientLight);
+        Halfplane3DH normal = new Halfplane3DH(polygon);
+        lightColor = lighting.light(centerPoint, polygon.get(0).getColor(), normal, kSpecular, specularExponent);
+        ambientShader = c -> lightColor.multiply(c);
+
         //clip
         List<Vertex3D> array_clippedZ= this.clipper.clipZ_toVertexArray(polygon);
 
