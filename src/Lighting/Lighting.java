@@ -28,7 +28,7 @@ public class Lighting {
         Color Ii = this.light.getIntensity();
 
         double fatti = getfatti(this.light, cameraSpacePoint);
-        //System.out.println(fatti);
+        System.out.println(fatti);
 
         Transformation unitNormal = normal.getNormalVector().normalizeVector();
         //unitNormal.printMatrix();
@@ -43,18 +43,23 @@ public class Lighting {
         double ks = kSpecular;
 
         Point3DH V = new Point3DH(0,0,-1);
-        Point3DH newV = V.subtract(cameraSpacePoint.getPoint3D());
+        //Point3DH newV = V.subtract(cameraSpacePoint.getPoint3D());
+        Point3DH newV = cameraSpacePoint.getPoint3D().subtract(V);
         Transformation v = new Transformation(3,1);
-        v.set(1,1,newV.getX());
-        v.set(2,1,newV.getY());
-        v.set(3,1,newV.getZ());
+//        v.set(1,1,newV.getX());
+//        v.set(2,1,newV.getY());
+//        v.set(3,1,newV.getZ());
+        v.set(1,1,0);
+        v.set(2,1,0);
+        v.set(3,1,-1);
         v = v.normalizeVector();
 
         double nl = unitNormal.dotProduct(unitL);
         Transformation temp = unitNormal.scale(2*nl);
         Transformation R = temp.substract(unitL);
         //R.printMatrix();
-        Transformation unitR = R.normalizeVector();
+        Transformation unitR = R;
+        //Transformation unitR = R.normalizeVector();
 
 
         //p from inputs
