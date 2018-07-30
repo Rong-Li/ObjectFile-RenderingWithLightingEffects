@@ -158,9 +158,14 @@ public class SimpInterpreter {
         double A = cleanNumber(tokens[4]);
         double B = cleanNumber(tokens[5]);
 
-        Vertex3D origin = new Vertex3D(this.lightOrigin, defaultColor);
-        Transformation vector = Transformation.vertexToVector(origin);
+        Transformation vector = new Transformation(4,1);
+        vector.set(1,1,lightOrigin.getX());
+        vector.set(2,1,lightOrigin.getY());
+        vector.set(3,1,lightOrigin.getZ());
+        vector.set(4,1,lightOrigin.getW());
+        //vector.printMatrix();
         vector = vector.matrixMultiplication(this.CTM);
+        //vector.printMatrix();
         Point3DH resultLocation = new Point3DH(vector.get(1,1), vector.get(2,1), vector.get(3,1));
 
         this.light = new Light(I_light,resultLocation, A, B);
@@ -380,7 +385,7 @@ public class SimpInterpreter {
         //set clipper
         double hither = cleanNumber(tokens[5]);
         double yon = cleanNumber(tokens[6]);
-        this.lightOrigin = new Point3DH(xHigh-xLow, yHigh-yLow, hither);
+        this.lightOrigin = new Point3DH(0, 0, 0);
         this.clipper = new Clipper(hither, yon, xLow, xHigh, yLow, yHigh);
         projectedToScreen = Transformation.identity();
         double scaleSize_X = 650/(xHigh - xLow);
@@ -463,7 +468,8 @@ public class SimpInterpreter {
     public void RenderPolygon(Polygon polygon){
         Point3DH centerPoint3DH = centerPointofPolygon(polygon);
         Vertex3D centerPoint = new Vertex3D(centerPoint3DH, polygon.get(1).getColor());
-        Lighting lighting = new Lighting(this.light, polygon, ambientLight);
+
+        Lighting lighting = new Lighting(this.light, ambientLight);
         Halfplane3DH normal = new Halfplane3DH(polygon);
         lightColor = lighting.light(centerPoint, polygon.get(0).getColor(), normal, kSpecular, specularExponent);
         ambientShader = c -> lightColor.multiply(c);
@@ -473,7 +479,6 @@ public class SimpInterpreter {
 
 
 
-        //**some try
         for (int i = 0; i < array_clippedZ.size(); i++){
             Vertex3D temp = transformToPerspective(array_clippedZ.get(i));
             array_clippedZ.set(i,temp);
@@ -525,15 +530,17 @@ public class SimpInterpreter {
     }
     //limitation of being an triangular.
     public Point3DH centerPointofPolygon(Polygon polygon){
-        if (polygon.length() != 3){
-            System.out.println("WRONG WRONG WRONG WRONG WRONG WRONG WRONG ");
+        double centerX = 0;
+        double centerY = 0;
+        double centerZ = 0;
+        double edges = polygon.length();
+        for (int i = 0; i < edges; i++){
+            centerX = centerX + polygon.get(i).getX();
+            centerY = centerY + polygon.get(i).getY();
+            centerZ = centerZ + polygon.get(i).getZ();
         }
 
-        double centerX = (polygon.get(0).getX() + polygon.get(1).getX() + polygon.get(2).getX()) / 3;
-        double centerY = (polygon.get(0).getY() + polygon.get(1).getY() + polygon.get(2).getY()) / 3;
-        double centerZ = (polygon.get(0).getZ() + polygon.get(1).getZ() + polygon.get(2).getZ()) / 3;
-
-        Point3DH result = new Point3DH(centerX,centerY,centerZ);
+        Point3DH result = new Point3DH(centerX/edges,centerY/edges,centerZ/edges);
 
         return result;
     }

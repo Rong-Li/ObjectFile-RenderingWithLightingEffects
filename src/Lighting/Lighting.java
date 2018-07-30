@@ -4,20 +4,17 @@ import geometry.Halfplane3DH;
 import geometry.Point3DH;
 import geometry.Transformation;
 import geometry.Vertex3D;
-import polygon.Polygon;
 import windowing.graphics.Color;
 
 public class Lighting {
 
     private Light light;
-    private Polygon polygon;
     private Color Ia;
 
 
 
-    public Lighting(Light light, Polygon polygon, Color ambient){
+    public Lighting(Light light, Color ambient){
         this.light = light;
-        this.polygon = polygon;
         this.Ia = ambient;
     }
 
@@ -31,8 +28,10 @@ public class Lighting {
         Color Ii = this.light.getIntensity();
 
         double fatti = getfatti(this.light, cameraSpacePoint);
+        //System.out.println(fatti);
 
         Transformation unitNormal = normal.getNormalVector().normalizeVector();
+        //unitNormal.printMatrix();
 
         Point3DH lightVector = this.light.getCameraSpaceLocation().subtract(cameraSpacePoint.getPoint3D());
         Transformation L = new Transformation(3,1);
@@ -43,21 +42,32 @@ public class Lighting {
 
         double ks = kSpecular;
 
+        Point3DH V = new Point3DH(0,0,-1);
+        Point3DH newV = V.subtract(cameraSpacePoint.getPoint3D());
         Transformation v = new Transformation(3,1);
-        v.set(1,1,0);
-        v.set(2,1,0);
-        v.set(3,1,-1);
+        v.set(1,1,newV.getX());
+        v.set(2,1,newV.getY());
+        v.set(3,1,newV.getZ());
+        v = v.normalizeVector();
 
         double nl = unitNormal.dotProduct(unitL);
         Transformation temp = unitNormal.scale(2*nl);
-        Transformation unitR = temp.substract(unitL);
+        Transformation R = temp.substract(unitL);
+        //R.printMatrix();
+        Transformation unitR = R.normalizeVector();
+
 
         //p from inputs
 
 
         //calculate constance that won't change each calculation
         double vr = v.dotProduct(unitR);
+        //System.out.println(vr);
+
         double KsVRp = ks * Math.pow(vr,specularExponent);
+        //double KsVRp = ks * vr;
+        //System.out.println(KsVRp);
+
 
 
         //get red component
@@ -66,11 +76,13 @@ public class Lighting {
         double blue = kd.getB() * Ia.getB() + Ii.getB() * fatti * (kd.getB() * nl + KsVRp);
 
         Color result = new Color(red,green,blue);
+        //System.out.println(result);
         return result;
     }
 
     public double getfatti(Light light, Vertex3D point){
-        double result = distanceBetween2Points(light.getCameraSpaceLocation(), point.getPoint3D());
+        double temp = distanceBetween2Points(light.getCameraSpaceLocation(), point.getPoint3D());
+        double result = 1 / (light.getFattA() + light.getFattB() * temp);
         return result;
     }
 

@@ -374,8 +374,9 @@ public class Transformation {
     //this * vector
     public double dotProduct(Transformation vector){
         double result = 0;
-        for (int i = 1; i < this.getRows(); i++){
-            result = result + this.get(i,1) * vector.get(i,1);
+        for (int i = 1; i < this.getRows() + 1; i++){
+            double temp = this.get(i,1) * vector.get(i,1);
+            result = result + temp;
         }
         return result;
     }
