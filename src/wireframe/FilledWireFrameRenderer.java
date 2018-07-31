@@ -6,6 +6,9 @@ import line.LineRenderer;
 import polygon.Polygon;
 import polygon.PolygonRenderer;
 import polygon.Shader;
+import shading.FaceShader;
+import shading.PixelShader;
+import shading.VertexShader;
 import windowing.drawable.Drawable;
 
 public class FilledWireFrameRenderer implements PolygonRenderer {
@@ -13,7 +16,7 @@ public class FilledWireFrameRenderer implements PolygonRenderer {
     private LineRenderer lineRenderer = DDALineRenderer.make();
 
     @Override
-    public void drawPolygon(Polygon polygon, Drawable drawable, Shader vertexShader) {
+    public void drawPolygon(Polygon polygon, Drawable drawable, FaceShader faceshader, VertexShader vertexshader, PixelShader pixelshader) {
         if (outofRange(polygon,drawable)){
             return;
         }

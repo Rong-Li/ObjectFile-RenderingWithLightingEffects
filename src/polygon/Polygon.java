@@ -5,10 +5,12 @@ import java.util.List;
 
 import geometry.Vertex;
 import geometry.Vertex3D;
+import windowing.graphics.Color;
 
 public class Polygon extends Chain {
 	private static final int INDEX_STEP_FOR_CLOCKWISE = -1;
 	private static final int INDEX_STEP_FOR_COUNTERCLOCKWISE = 1;
+	private Color lightColor;
 	
 	private Polygon(Vertex3D... initialVertices) {
 		super(initialVertices);
@@ -16,8 +18,16 @@ public class Polygon extends Chain {
 			throw new IllegalArgumentException("Not enough vertices to construct a polygon");
 		}
 	}
-	
-	// the EmptyMarker is to distinguish this constructor from the one above (when there are no initial vertices).
+
+    public void setLightColor(Color lightColor) {
+        this.lightColor = lightColor;
+    }
+
+    public Color getLightColor() {
+        return lightColor;
+    }
+
+    // the EmptyMarker is to distinguish this constructor from the one above (when there are no initial vertices).
 	private enum EmptyMarker { MARKER; };
 	private Polygon(EmptyMarker ignored) {
 		super();

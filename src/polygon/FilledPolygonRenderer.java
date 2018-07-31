@@ -1,17 +1,29 @@
 package polygon;
 
 import geometry.Vertex3D;
+import shading.FaceShader;
+import shading.PixelShader;
+import shading.VertexShader;
 import windowing.drawable.Drawable;
 import windowing.graphics.Color;
 
 public class FilledPolygonRenderer implements PolygonRenderer {
-    private Shader shader;
+    private FaceShader faceshader;
+    private PixelShader pixelshader;
+    private VertexShader vertexshader;
+    private Color lightColor;
     private FilledPolygonRenderer() {
     }
 
     @Override
-    public void drawPolygon(Polygon polygon, Drawable drawable, Shader vertexShader) {
-        this.shader = vertexShader;
+    public void drawPolygon(Polygon thePolygon, Drawable drawable, FaceShader faceshader, VertexShader vertexshader, PixelShader pixelshader) {
+        this.faceshader = faceshader;
+        this.vertexshader = vertexshader;
+        this.pixelshader = pixelshader;
+
+        Polygon polygon = faceshader.shade(thePolygon);
+        this.lightColor = pixelshader.shade(polygon,polygon.get(0));
+
         if (outofRange(polygon, drawable)) {
             return;
         }
@@ -32,10 +44,7 @@ public class FilledPolygonRenderer implements PolygonRenderer {
         Vertex3D p_bottomRight = right_chain.get(1);
 
         // if having horizontal bottom line
-        if (/*left_chain.get(0).getIntY() > left_chain.get(1).getIntY()
-                && right_chain.get(0).getIntY() > right_chain.get(1).getIntY()
-                && */left_chain.get(1).getIntY() == right_chain.get(1).getIntY()) {
-            //System.out.println("wrong1");
+        if (left_chain.get(1).getIntY() == right_chain.get(1).getIntY()) {
 
             Horizontal_Bottom(p_top, p_bottomLeft, p_bottomRight, drawable);
         }
@@ -316,14 +325,14 @@ public class FilledPolygonRenderer implements PolygonRenderer {
         int end = (int) Math.round(x_end);
         if (start == end) {
             if(start < drawable.getWidth() && y < drawable.getHeight()){
-                drawable.setPixel(start, y, 1/z, shader.shade(c1).asARGB());
+                drawable.setPixel(start, y, 1/z, c1.multiply(lightColor).asARGB());
             }
         }
 
         else {
             for (int i = start; i < end; i++) {
                 if(i < drawable.getWidth() && y < drawable.getHeight()){
-                    drawable.setPixel(i, y, 1/z, shader.shade(newColor).asARGB());
+                    drawable.setPixel(i, y, 1/z, newColor.multiply(lightColor).asARGB());
                 }
                 newColor = newColor.add(addOn);
                 z = z + z_slope;

@@ -6,3 +6,4 @@ import windowing.graphics.Color;
 public interface Shader {
 	public Color shade(Color c);
 }
+

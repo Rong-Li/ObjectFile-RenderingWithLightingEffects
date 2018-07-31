@@ -15,6 +15,9 @@ import geometry.Transformation;
 import polygon.Polygon;
 import polygon.PolygonRenderer;
 import polygon.Shader;
+import shading.FaceShader;
+import shading.PixelShader;
+import shading.VertexShader;
 import windowing.drawable.DepthCueingDrawable;
 import windowing.drawable.Drawable;
 import windowing.graphics.Color;
@@ -50,6 +53,9 @@ public class SimpInterpreter {
     private Transformation cameraToScreen;
     private Clipper clipper;
     private Shader ambientShader;
+    private FaceShader faceshader;
+    private PixelShader pixelshader;
+    private VertexShader vertexshader;
     private ShaderStyle shaderStyle;
     private Light light;
     private Point3DH lightOrigin;
@@ -471,10 +477,27 @@ public class SimpInterpreter {
         Point3DH centerPoint3DH = centerPointofPolygon(polygon);
         Vertex3D centerPoint = new Vertex3D(centerPoint3DH, polygon.get(1).getColor());
 
-        Lighting lighting = new Lighting(this.light, ambientLight);
-        Halfplane3DH normal = new Halfplane3DH(polygon);
-        lightColor = lighting.light(centerPoint, polygon.get(0).getColor(), normal, kSpecular, specularExponent);
-        ambientShader = c -> lightColor.multiply(c);
+        if(shaderStyle == ShaderStyle.FLAT){
+            faceshader = fShaderPolygon ->{
+                Lighting lighting = new Lighting(this.light, ambientLight);
+                Halfplane3DH normal = new Halfplane3DH(polygon);
+                lightColor = lighting.light(centerPoint, polygon.get(0).getColor(), normal, kSpecular, specularExponent);
+                Polygon result = fShaderPolygon;
+                result.setLightColor(lightColor);
+                return result;
+            };
+
+            vertexshader = (vShaderPolygon, vShaderVertex) ->{
+                return vShaderVertex;
+            };
+
+            pixelshader = (pShaderPolygon, pShaderVertex) ->{
+                return pShaderPolygon.getLightColor();
+            };
+        }
+
+
+
 
         //clip
         List<Vertex3D> array_clippedZ= this.clipper.clipZ_toVertexArray(polygon);
@@ -514,11 +537,11 @@ public class SimpInterpreter {
         if(this.renderStyle == RenderStyle.FILLED){
             List<Polygon> listOfPolygons = Clipper.Triangulation(finalPolygon);
             for (int i = 0; i < listOfPolygons.size(); i++){
-                filledRenderer.drawPolygon(listOfPolygons.get(i), this.drawable, ambientShader);
+                filledRenderer.drawPolygon(listOfPolygons.get(i),drawable, faceshader, vertexshader, pixelshader);
             }
         }
         else if(this.renderStyle == RenderStyle.WIREFRAME){
-            wireframeRenderer.drawPolygon(finalPolygon, this.ZbufferDrawable, ambientShader);
+            wireframeRenderer.drawPolygon(finalPolygon,ZbufferDrawable, faceshader, vertexshader, pixelshader);
         }
     }
 
