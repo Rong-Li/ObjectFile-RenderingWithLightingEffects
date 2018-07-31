@@ -12,7 +12,7 @@ public class FilledPolygonRenderer implements PolygonRenderer {
     private FaceShader faceshader;
     private PixelShader pixelshader;
     private VertexShader vertexshader;
-    private Color lightColor;
+    private Color lightColor = Color.WHITE;
     private FilledPolygonRenderer() {
     }
 
@@ -23,14 +23,12 @@ public class FilledPolygonRenderer implements PolygonRenderer {
         this.pixelshader = pixelshader;
         Polygon polygon = thePolygon;
 
-        if (faceshader == null){
-            lightColor = Color.WHITE;
-        }
-        else{
+        if (faceshader != null){
             polygon = faceshader.shade(thePolygon);
-
-            this.lightColor = pixelshader.shade(polygon,polygon.get(0));
         }
+
+
+
 
 
         if (outofRange(polygon, drawable)) {
@@ -51,6 +49,16 @@ public class FilledPolygonRenderer implements PolygonRenderer {
         Vertex3D p_top = left_chain.get(0);
         Vertex3D p_bottomLeft = left_chain.get(1);
         Vertex3D p_bottomRight = right_chain.get(1);
+
+        if(vertexshader != null){
+            p_top = vertexshader.shade(polygon,p_top);
+            p_bottomLeft = vertexshader.shade(polygon,p_bottomLeft);
+            p_bottomRight = vertexshader.shade(polygon,p_bottomRight);
+        }
+        if (pixelshader != null){
+            this.lightColor = pixelshader.shade(polygon,polygon.get(0));
+        }
+
 
         // if having horizontal bottom line
         if (left_chain.get(1).getIntY() == right_chain.get(1).getIntY()) {

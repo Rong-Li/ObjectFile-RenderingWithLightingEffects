@@ -23,6 +23,11 @@ public class Halfplane3DH {
         this.normalVector.set(3,1,planeNormal.getZ());
     }
 
+    //if we are using average normal of each vertex
+    public Halfplane3DH(Transformation vector){
+        this.normalVector = vector;
+    }
+
     public Point3DH getNormalFromPolygon(Polygon polygon){
         Vertex3D a = polygon.get(1).subtract(polygon.get(0));
         Vertex3D b = polygon.get(2).subtract(polygon.get(0));

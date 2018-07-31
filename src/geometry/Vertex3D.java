@@ -4,9 +4,37 @@ import windowing.graphics.Color;
 
 public class Vertex3D implements Vertex {
 	protected Point3DH point;
+    private Point3DH cameraPoint;
 	protected Color color;
-	
-	public Vertex3D(Point3DH point, Color color) {
+	private boolean hasNormal = false;
+	private Point3DH normal;
+
+
+    public boolean isHasNormal() {
+        return hasNormal;
+    }
+
+    public Point3DH getNormal() {
+        return normal;
+    }
+
+    public void setHasNormal(boolean hasNormal) {
+        this.hasNormal = hasNormal;
+    }
+
+    public void setNormal(Point3DH normal) {
+        this.normal = normal;
+    }
+
+    public Point3DH getCameraPoint() {
+        return cameraPoint;
+    }
+
+    public void setCameraPoint(Point3DH cameraPoint) {
+        this.cameraPoint = cameraPoint;
+    }
+
+    public Vertex3D(Point3DH point, Color color) {
 		super();
 		this.point = point;
 		this.color = color;

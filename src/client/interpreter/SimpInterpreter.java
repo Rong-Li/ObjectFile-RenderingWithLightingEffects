@@ -64,6 +64,7 @@ public class SimpInterpreter {
     private double specularExponent = 8;
     private Color lightColor;
     private Halfplane3DH normal;
+    private boolean thePolygonhHasnormal = false;
 
     public enum RenderStyle {
         FILLED,
@@ -453,7 +454,6 @@ public class SimpInterpreter {
         this.drawable = depthCueingDrawable;
     }
 
-
     public Vertex3D transformToPerspective(Vertex3D vertex){
         Transformation vector = Transformation.vertexToVector(vertex);
 
@@ -479,11 +479,47 @@ public class SimpInterpreter {
         Point3DH centerPoint3DH = centerPointofPolygon(polygon);
         Vertex3D centerPoint = new Vertex3D(centerPoint3DH, polygon.get(1).getColor());
         Lighting lighting = new Lighting(this.light, ambientLight);
+        int sum = 0;
+        for (int i = 0; i < polygon.length(); i++){
+            if (polygon.get(i).isHasNormal() == true){
+                sum++;
+            }
+        }
+        if (sum == polygon.length()){
+            this.thePolygonhHasnormal = true;
+        }
 
 
         if(shaderStyle == ShaderStyle.FLAT){
             faceshader = fShaderPolygon ->{
-                normal = new Halfplane3DH(polygon);
+                if (thePolygonhHasnormal == true){
+                    if (polygon.length() == 3){
+                        Point3DH p1 = polygon.get(0).getNormal();
+                        Point3DH p2 = polygon.get(1).getNormal();
+                        Point3DH p3 = polygon.get(2).getNormal();
+                        Transformation n = new Transformation(3,1);
+                        n.set(1,1,(p1.getX() + p2.getX() + p3.getX())/3);
+                        n.set(2,1,(p1.getY() + p2.getY() + p3.getY())/3);
+                        n.set(3,1,(p1.getZ() + p2.getZ() + p3.getZ())/3);
+                        normal = new Halfplane3DH(n);
+
+                    }
+                    else{
+                        Point3DH p1 = polygon.get(0).getNormal();
+                        Point3DH p2 = polygon.get(1).getNormal();
+                        Point3DH p3 = polygon.get(2).getNormal();
+                        Point3DH p4 = polygon.get(3).getNormal();
+                        Transformation n = new Transformation(3,1);
+                        n.set(1,1,(p1.getX() + p2.getX() + p3.getX() + p4.getX())/4);
+                        n.set(2,1,(p1.getY() + p2.getY() + p3.getY() + p4.getY())/4);
+                        n.set(3,1,(p1.getZ() + p2.getZ() + p3.getZ() + p4.getZ())/4);
+                        normal = new Halfplane3DH(n);
+                    }
+
+                }
+                else {
+                    normal = new Halfplane3DH(polygon);
+                }
                 lightColor = lighting.light(centerPoint, polygon.get(0).getColor(), normal, kSpecular, specularExponent);
                 //System.out.println(kSpecular);
                 Polygon result = fShaderPolygon;
@@ -507,8 +543,10 @@ public class SimpInterpreter {
             };
 
             vertexshader = (vShaderPolygon, vShaderVertex) ->{
-                lightColor = lighting.light(centerPoint, polygon.get(0).getColor(), normal, kSpecular, specularExponent);
-                return vShaderVertex;
+                Vertex3D cameraspaceVertex = new Vertex3D(vShaderVertex.getCameraPoint(), vShaderVertex.getColor());
+                lightColor = lighting.light(cameraspaceVertex, polygon.get(0).getColor(), normal, kSpecular, specularExponent);
+                Vertex3D result = new Vertex3D(vShaderVertex.getPoint3D(), vShaderVertex.getColor().multiply(lightColor));
+                return result;
             };
 
             pixelshader = (pShaderPolygon, pShaderVertex) ->{
@@ -542,7 +580,9 @@ public class SimpInterpreter {
         }
 
         for (int i = 0; i < array_clippedY.size(); i++){
+            Point3DH cameraSpace = array_clippedY.get(i).getPoint3D();
             Vertex3D temp = transformToCamera(array_clippedY.get(i));
+            temp.setCameraPoint(cameraSpace);
             array_clippedY.set(i,temp);
             //System.out.println("the points: "+ array_clippedY.get(i).getIntX() + " " + array_clippedY.get(i).getIntY() + " " +array_clippedY.get(i).getZ());
         }

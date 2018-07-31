@@ -51,6 +51,7 @@ class ObjReader {
 	private List<Vertex3D> objVertices;
 	private List<Vertex3D> transformedVertices;
 	private List<Point3DH> objNormals;
+	private List<Point3DH> transformedObjNormals;
 	private List<ObjFace> objFaces;
 
 	private Color defaultColor;
@@ -60,6 +61,7 @@ class ObjReader {
 	    this.reader = new LineBasedReader(filename);
 	    this.objVertices = new ArrayList<>();
 	    this.transformedVertices = new ArrayList<>();
+	    this.transformedObjNormals = new ArrayList<>();
 	    this.objNormals = new ArrayList<>();
 	    this.objFaces = new ArrayList<>();
 	}
@@ -80,6 +82,16 @@ class ObjReader {
             Vertex3D newVertex = new Vertex3D(vector.get(1,1), vector.get(2,1), vector.get(3,1), objVertices.get(i).getColor());
             transformedVertices.add(newVertex);
         }
+
+        for (int i = 0; i < objNormals.size(); i++){
+            Point3DH normal = objNormals.get(i);
+            Vertex3D v_normal = new Vertex3D(normal,Color.WHITE);
+            Transformation vector = Transformation.vertexToVector(v_normal);
+            vector = vector.matrixMultiplication(interpreter.getCTM());
+            //vector.printMatrix();
+            Point3DH newPoint = new Point3DH(vector.get(1,1), vector.get(2,1), vector.get(3,1));
+            transformedObjNormals.add(newPoint);
+        }
     }
 
     private Polygon polygonForFace(ObjFace face) {
@@ -88,10 +100,12 @@ class ObjReader {
         Polygon result = Polygon.makeEmpty();
         for(ObjVertex objVertex: face) {
             int vertexIndex = objVertex.getIndex();
-            result.add(transformedVertices.get(vertexIndex));
+            Vertex3D theVertex = transformedVertices.get(vertexIndex);
+            theVertex.setHasNormal(true);
+            theVertex.setNormal(transformedObjNormals.get(objVertex.getNormal_index()));
+            result.add(theVertex);
         }
         return result;
-
 	}
 
 	public void read() {
