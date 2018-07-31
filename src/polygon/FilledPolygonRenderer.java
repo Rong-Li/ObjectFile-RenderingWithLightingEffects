@@ -3,6 +3,7 @@ package polygon;
 import geometry.Vertex3D;
 import shading.FaceShader;
 import shading.PixelShader;
+import shading.Shaders;
 import shading.VertexShader;
 import windowing.drawable.Drawable;
 import windowing.graphics.Color;
@@ -20,9 +21,16 @@ public class FilledPolygonRenderer implements PolygonRenderer {
         this.faceshader = faceshader;
         this.vertexshader = vertexshader;
         this.pixelshader = pixelshader;
+        Polygon polygon = thePolygon;
 
-        Polygon polygon = faceshader.shade(thePolygon);
-        this.lightColor = pixelshader.shade(polygon,polygon.get(0));
+        if (faceshader == null){
+            lightColor = Color.WHITE;
+        }
+        else{
+            polygon = faceshader.shade(thePolygon);
+            this.lightColor = pixelshader.shade(polygon,polygon.get(0));
+        }
+
 
         if (outofRange(polygon, drawable)) {
             return;
@@ -45,7 +53,6 @@ public class FilledPolygonRenderer implements PolygonRenderer {
 
         // if having horizontal bottom line
         if (left_chain.get(1).getIntY() == right_chain.get(1).getIntY()) {
-
             Horizontal_Bottom(p_top, p_bottomLeft, p_bottomRight, drawable);
         }
         // if having Non-horizontal bottom line

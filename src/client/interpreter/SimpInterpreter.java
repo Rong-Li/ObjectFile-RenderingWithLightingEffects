@@ -17,6 +17,7 @@ import polygon.PolygonRenderer;
 import polygon.Shader;
 import shading.FaceShader;
 import shading.PixelShader;
+import shading.Shaders;
 import shading.VertexShader;
 import windowing.drawable.DepthCueingDrawable;
 import windowing.drawable.Drawable;
@@ -482,6 +483,7 @@ public class SimpInterpreter {
                 Lighting lighting = new Lighting(this.light, ambientLight);
                 Halfplane3DH normal = new Halfplane3DH(polygon);
                 lightColor = lighting.light(centerPoint, polygon.get(0).getColor(), normal, kSpecular, specularExponent);
+                //System.out.println(kSpecular);
                 Polygon result = fShaderPolygon;
                 result.setLightColor(lightColor);
                 return result;

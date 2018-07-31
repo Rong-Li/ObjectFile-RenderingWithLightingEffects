@@ -31,7 +31,7 @@ public class Lighting {
         //System.out.println(fatti);
 
         Transformation unitNormal = normal.getNormalVector().normalizeVector();
-        unitNormal.printMatrix();
+        //unitNormal.printMatrix();
 
         Point3DH lightVector = this.light.getCameraSpaceLocation().subtract(cameraSpacePoint.getPoint3D());
         Transformation L = new Transformation(3,1);
@@ -58,8 +58,8 @@ public class Lighting {
         Transformation temp = unitNormal.scale(2*nl);
         Transformation R = temp.substract(unitL);
         //R.printMatrix();
-        Transformation unitR = R;
-        //Transformation unitR = R.normalizeVector();
+        //Transformation unitR = R;
+        Transformation unitR = R.normalizeVector();
 
 
         //p from inputs
