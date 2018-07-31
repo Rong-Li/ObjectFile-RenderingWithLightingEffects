@@ -63,6 +63,7 @@ public class SimpInterpreter {
     private double kSpecular = 0.3;
     private double specularExponent = 8;
     private Color lightColor;
+    private Halfplane3DH normal;
 
     public enum RenderStyle {
         FILLED,
@@ -477,11 +478,12 @@ public class SimpInterpreter {
     public void RenderPolygon(Polygon polygon){
         Point3DH centerPoint3DH = centerPointofPolygon(polygon);
         Vertex3D centerPoint = new Vertex3D(centerPoint3DH, polygon.get(1).getColor());
+        Lighting lighting = new Lighting(this.light, ambientLight);
+
 
         if(shaderStyle == ShaderStyle.FLAT){
             faceshader = fShaderPolygon ->{
-                Lighting lighting = new Lighting(this.light, ambientLight);
-                Halfplane3DH normal = new Halfplane3DH(polygon);
+                normal = new Halfplane3DH(polygon);
                 lightColor = lighting.light(centerPoint, polygon.get(0).getColor(), normal, kSpecular, specularExponent);
                 //System.out.println(kSpecular);
                 Polygon result = fShaderPolygon;
@@ -490,6 +492,22 @@ public class SimpInterpreter {
             };
 
             vertexshader = (vShaderPolygon, vShaderVertex) ->{
+                return vShaderVertex;
+            };
+
+            pixelshader = (pShaderPolygon, pShaderVertex) ->{
+                return pShaderPolygon.getLightColor();
+            };
+        }
+
+        else if(shaderStyle == ShaderStyle.GOURAUD){
+            faceshader = fShaderPolygon ->{
+                normal = new Halfplane3DH(polygon);
+                return fShaderPolygon;
+            };
+
+            vertexshader = (vShaderPolygon, vShaderVertex) ->{
+                lightColor = lighting.light(centerPoint, polygon.get(0).getColor(), normal, kSpecular, specularExponent);
                 return vShaderVertex;
             };
 

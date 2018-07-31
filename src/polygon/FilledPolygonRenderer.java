@@ -28,6 +28,7 @@ public class FilledPolygonRenderer implements PolygonRenderer {
         }
         else{
             polygon = faceshader.shade(thePolygon);
+
             this.lightColor = pixelshader.shade(polygon,polygon.get(0));
         }
 
