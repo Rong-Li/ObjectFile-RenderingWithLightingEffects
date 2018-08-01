@@ -26,7 +26,7 @@ public class FilledPolygonRenderer implements PolygonRenderer {
         this.polygon = thePolygon;
         this.lighted = lighted;
 
-        System.out.println(lighted);
+        //System.out.println(lighted);
         if (lighted){
             polygon = faceshader.shade(thePolygon);
         }

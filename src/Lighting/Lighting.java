@@ -22,6 +22,7 @@ public class Lighting {
         //initialize variables for lighting formula
 
         Color kd = kDiffuse;
+        //System.out.println(kd);
 
         // Color Ia from constructor
 
@@ -51,12 +52,17 @@ public class Lighting {
         v.set(1,1,newV.getX());
         v.set(2,1,newV.getY());
         v.set(3,1,newV.getZ());
-
         v = v.normalizeVector();
 
         double nl = unitNormal.dotProduct(unitL);
+        if(nl < 0){
+            nl = 0;
+        }
+        //double nl = unitL.dotProduct(unitNormal);
         double doubled_nl = 2 * nl;
-        Transformation temp = unitNormal.scale(doubled_nl);
+        Transformation temp = unitNormal.scale(nl);
+        temp = temp.normalizeVector();
+        temp = temp.scale(2);
         temp = temp.normalizeVector();
         Transformation R = temp.substract(unitL);
         //R.printMatrix();
@@ -69,11 +75,21 @@ public class Lighting {
 
         //calculate constance that won't change each calculation
         double vr = v.dotProduct(unitR);
-        //System.out.println(vr);
+        //double vr = unitR.dotProduct(v);
+        if (vr < 0){
+            vr = 0;
+        }
 
-        double KsVRp = ks * Math.pow(vr,specularExponent);
+        //v.printMatrix();
+        unitR.printMatrix();
+        //System.out.println(nl);
+
+        double vr_powered = Math.pow(vr,specularExponent);
+        double KsVRp = ks * vr_powered;
+        //System.out.println(specularExponent);
+
         //double KsVRp = ks * vr;
-        //System.out.println(KsVRp);
+        //System.out.println(vr);
 
 
 
@@ -83,13 +99,13 @@ public class Lighting {
         double blue = kd.getB() * Ia.getB() + Ii.getB() * fatti * (kd.getB() * nl + KsVRp);
 
         Color result = new Color(red,green,blue);
-        //System.out.println(Ii.getR() * fatti);
+        //System.out.println(Ii.getG() * fatti);
         return result;
     }
 
     public double getfatti(Light light, Vertex3D point){
         double temp = distanceBetween2Points(light.getCameraSpaceLocation(), point.getPoint3D());
-        double result = 1 / (light.getFattA() + light.getFattB() * temp);
+        double result = 1 / (light.getFattA() + (light.getFattB() * temp));
         return result;
     }
 

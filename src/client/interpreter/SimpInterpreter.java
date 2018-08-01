@@ -442,10 +442,10 @@ public class SimpInterpreter {
         double b = cleanNumber(tokens[3]);
         Color color = new Color(r,g,b);
         this.defaultColor = color;
-        this.kSpecular = 0.8;
-        this.specularExponent = 64;
-//        this.kSpecular = cleanNumber(tokens[4]);
-//        this.specularExponent = cleanNumber(tokens[5]);
+//        this.kSpecular = 0.8;
+//        this.specularExponent = 64;
+        this.kSpecular = cleanNumber(tokens[4]);
+        this.specularExponent = cleanNumber(tokens[5]);
     }
     private void interpretDepth(String[] tokens) {
         double near = cleanNumber(tokens[1]);

@@ -373,6 +373,9 @@ public class Transformation {
 
     //this * vector
     public double dotProduct(Transformation vector){
+        if (this.getRows() != 3 || vector.getRows() != 3){
+            System.out.println("wrong size");
+        }
         double result = 0;
         for (int i = 1; i < this.getRows() + 1; i++){
             double temp = this.get(i,1) * vector.get(i,1);
