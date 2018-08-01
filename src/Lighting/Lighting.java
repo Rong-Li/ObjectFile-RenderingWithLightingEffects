@@ -60,10 +60,7 @@ public class Lighting {
         }
         //double nl = unitL.dotProduct(unitNormal);
         double doubled_nl = 2 * nl;
-        Transformation temp = unitNormal.scale(nl);
-        temp = temp.normalizeVector();
-        temp = temp.scale(2);
-        temp = temp.normalizeVector();
+        Transformation temp = unitNormal.scale(doubled_nl);
         Transformation R = temp.substract(unitL);
         //R.printMatrix();
         //Transformation unitR = R;
@@ -82,14 +79,14 @@ public class Lighting {
 
         //v.printMatrix();
         unitR.printMatrix();
-        //System.out.println(nl);
+        //System.out.println(vr);
 
         double vr_powered = Math.pow(vr,specularExponent);
         double KsVRp = ks * vr_powered;
         //System.out.println(specularExponent);
 
         //double KsVRp = ks * vr;
-        //System.out.println(vr);
+        //System.out.println(KsVRp);
 
 
 

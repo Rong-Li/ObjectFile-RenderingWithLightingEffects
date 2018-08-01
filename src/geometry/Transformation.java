@@ -363,6 +363,9 @@ public class Transformation {
             sum = sum + (temp * temp);
         }
         double denominator = Math.sqrt(sum);
+        if(denominator == 0){
+            System.out.println("denominater is 0!!! becasue of the normalization");
+        }
         Transformation result = new Transformation(this.getRows(), 1);
         for (int i = 1; i < result.getRows()+1; i++){
             double temp = this.get(i,1) / denominator;
