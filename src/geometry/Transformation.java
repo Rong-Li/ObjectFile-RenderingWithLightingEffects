@@ -360,7 +360,7 @@ public class Transformation {
         double sum = 0;
         for (int i = 1; i < this.getRows()+1; i++){
             double temp = this.get(i,1);
-            sum = sum + temp * temp;
+            sum = sum + (temp * temp);
         }
         double denominator = Math.sqrt(sum);
         Transformation result = new Transformation(this.getRows(), 1);

@@ -65,6 +65,7 @@ public class SimpInterpreter {
     private Color lightColor;
     private Halfplane3DH normal;
     private boolean thePolygonhHasnormal = false;
+    private boolean lighted = false;
 
     public enum RenderStyle {
         FILLED,
@@ -207,9 +208,9 @@ public class SimpInterpreter {
     private void filled() {
         this.renderStyle = RenderStyle.FILLED;
     }
-    private void phong() { this.shaderStyle = ShaderStyle.PHONG; }
-    private void gouraud() { this.shaderStyle = ShaderStyle.GOURAUD; }
-    private void flat() { this.shaderStyle = ShaderStyle.FLAT; }
+    private void phong() { this.shaderStyle = ShaderStyle.PHONG; this.lighted = true;}
+    private void gouraud() { this.shaderStyle = ShaderStyle.GOURAUD; this.lighted = true;}
+    private void flat() { this.shaderStyle = ShaderStyle.FLAT; this.lighted = true;}
 
     // this one is complete.
     private void interpretFile(String[] tokens) {
@@ -290,7 +291,7 @@ public class SimpInterpreter {
         for (int i = 0; i < 3; i++){
             Transformation vector = Transformation.vertexToVector(vertices[i]);
             vector = vector.matrixMultiplication(this.CTM);
-            vertices[i] = new Vertex3D(vector.get(1,1), vector.get(2,1), vector.get(3,1), vertices[i].getColor());
+            vertices[i] = new Vertex3D(vector.get(1,1), vector.get(2,1), vector.get(3,1), defaultColor);
             //System.out.println(vertices[i]);
         }
         Polygon polygon = Polygon.makeEnsuringClockwise(vertices);
@@ -431,6 +432,7 @@ public class SimpInterpreter {
         double g = cleanNumber(tokens[2]);
         double b = cleanNumber(tokens[3]);
         ambientLight = new Color(r,g,b);
+
     }
 
 
@@ -440,8 +442,10 @@ public class SimpInterpreter {
         double b = cleanNumber(tokens[3]);
         Color color = new Color(r,g,b);
         this.defaultColor = color;
-        this.kSpecular = cleanNumber(tokens[4]);
-        this.specularExponent = cleanNumber(tokens[5]);
+        this.kSpecular = 0.8;
+        this.specularExponent = 64;
+//        this.kSpecular = cleanNumber(tokens[4]);
+//        this.specularExponent = cleanNumber(tokens[5]);
     }
     private void interpretDepth(String[] tokens) {
         double near = cleanNumber(tokens[1]);
@@ -520,8 +524,9 @@ public class SimpInterpreter {
                 else {
                     normal = new Halfplane3DH(polygon);
                 }
+
+
                 lightColor = lighting.light(centerPoint, polygon.get(0).getColor(), normal, kSpecular, specularExponent);
-                //System.out.println(kSpecular);
                 Polygon result = fShaderPolygon;
                 result.setLightColor(lightColor);
                 return result;
@@ -597,11 +602,11 @@ public class SimpInterpreter {
         if(this.renderStyle == RenderStyle.FILLED){
             List<Polygon> listOfPolygons = Clipper.Triangulation(finalPolygon);
             for (int i = 0; i < listOfPolygons.size(); i++){
-                filledRenderer.drawPolygon(listOfPolygons.get(i),drawable, faceshader, vertexshader, pixelshader);
+                filledRenderer.drawPolygon(listOfPolygons.get(i),drawable, faceshader, vertexshader, pixelshader, lighted);
             }
         }
         else if(this.renderStyle == RenderStyle.WIREFRAME){
-            wireframeRenderer.drawPolygon(finalPolygon,ZbufferDrawable, faceshader, vertexshader, pixelshader);
+            wireframeRenderer.drawPolygon(finalPolygon,ZbufferDrawable, faceshader, vertexshader, pixelshader, lighted);
         }
     }
 

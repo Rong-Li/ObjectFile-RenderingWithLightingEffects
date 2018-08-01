@@ -12,21 +12,24 @@ public class FilledPolygonRenderer implements PolygonRenderer {
     private FaceShader faceshader;
     private PixelShader pixelshader;
     private VertexShader vertexshader;
-    private Color lightColor = Color.WHITE;
+    private Color lightColor;
+    private Polygon polygon;
+    private boolean lighted;
     private FilledPolygonRenderer() {
     }
 
     @Override
-    public void drawPolygon(Polygon thePolygon, Drawable drawable, FaceShader faceshader, VertexShader vertexshader, PixelShader pixelshader) {
+    public void drawPolygon(Polygon thePolygon, Drawable drawable, FaceShader faceshader, VertexShader vertexshader, PixelShader pixelshader, boolean lighted) {
         this.faceshader = faceshader;
         this.vertexshader = vertexshader;
         this.pixelshader = pixelshader;
-        Polygon polygon = thePolygon;
+        this.polygon = thePolygon;
+        this.lighted = lighted;
 
-        if (faceshader != null){
+        System.out.println(lighted);
+        if (lighted){
             polygon = faceshader.shade(thePolygon);
         }
-
 
 
 
@@ -50,13 +53,10 @@ public class FilledPolygonRenderer implements PolygonRenderer {
         Vertex3D p_bottomLeft = left_chain.get(1);
         Vertex3D p_bottomRight = right_chain.get(1);
 
-        if(vertexshader != null){
+        if(lighted){
             p_top = vertexshader.shade(polygon,p_top);
             p_bottomLeft = vertexshader.shade(polygon,p_bottomLeft);
             p_bottomRight = vertexshader.shade(polygon,p_bottomRight);
-        }
-        if (pixelshader != null){
-            this.lightColor = pixelshader.shade(polygon,polygon.get(0));
         }
 
 
@@ -341,14 +341,28 @@ public class FilledPolygonRenderer implements PolygonRenderer {
         int end = (int) Math.round(x_end);
         if (start == end) {
             if(start < drawable.getWidth() && y < drawable.getHeight()){
-                drawable.setPixel(start, y, 1/z, c1.multiply(lightColor).asARGB());
+                if(lighted){
+                    Vertex3D vertex = new Vertex3D(start,y,1/z, c1);
+                    this.lightColor = pixelshader.shade(polygon,vertex);
+                    drawable.setPixel(start, y, 1/z, c1.multiply(lightColor).asARGB());
+                }
+                else{
+                    drawable.setPixel(start, y, 1/z, c1.asARGB());
+                }
             }
         }
 
         else {
             for (int i = start; i < end; i++) {
                 if(i < drawable.getWidth() && y < drawable.getHeight()){
-                    drawable.setPixel(i, y, 1/z, newColor.multiply(lightColor).asARGB());
+                    if(lighted){
+                        Vertex3D vertex = new Vertex3D(i,y,1/z, newColor);
+                        this.lightColor = pixelshader.shade(polygon,vertex);
+                        drawable.setPixel(i, y, 1/z, newColor.multiply(lightColor).asARGB());
+                    }
+                    else {
+                        drawable.setPixel(i, y, 1/z, newColor.asARGB());
+                    }
                 }
                 newColor = newColor.add(addOn);
                 z = z + z_slope;

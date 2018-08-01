@@ -16,7 +16,7 @@ public class FilledWireFrameRenderer implements PolygonRenderer {
     private LineRenderer lineRenderer = DDALineRenderer.make();
 
     @Override
-    public void drawPolygon(Polygon polygon, Drawable drawable, FaceShader faceshader, VertexShader vertexshader, PixelShader pixelshader) {
+    public void drawPolygon(Polygon polygon, Drawable drawable, FaceShader faceshader, VertexShader vertexshader, PixelShader pixelshader, boolean lighted) {
         if (outofRange(polygon,drawable)){
             return;
         }

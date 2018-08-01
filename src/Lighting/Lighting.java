@@ -28,7 +28,7 @@ public class Lighting {
         Color Ii = this.light.getIntensity();
 
         double fatti = getfatti(this.light, cameraSpacePoint);
-        //System.out.println(fatti);
+        //System.out.println(cameraSpacePoint);
 
         Transformation unitNormal = normal.getNormalVector().normalizeVector();
         //unitNormal.printMatrix();
@@ -39,6 +39,8 @@ public class Lighting {
         L.set(2,1,lightVector.getY());
         L.set(3,1,lightVector.getZ());
         Transformation unitL = L.normalizeVector();
+        //unitL.printMatrix();
+
 
         double ks = kSpecular;
 
@@ -46,16 +48,16 @@ public class Lighting {
         Point3DH newV = V.subtract(cameraSpacePoint.getPoint3D());
         //Point3DH newV = cameraSpacePoint.getPoint3D().subtract(V);
         Transformation v = new Transformation(3,1);
-//        v.set(1,1,newV.getX());
-//        v.set(2,1,newV.getY());
-//        v.set(3,1,newV.getZ());
-        v.set(1,1,0);
-        v.set(2,1,0);
-        v.set(3,1,-1);
+        v.set(1,1,newV.getX());
+        v.set(2,1,newV.getY());
+        v.set(3,1,newV.getZ());
+
         v = v.normalizeVector();
 
         double nl = unitNormal.dotProduct(unitL);
-        Transformation temp = unitNormal.scale(2*nl);
+        double doubled_nl = 2 * nl;
+        Transformation temp = unitNormal.scale(doubled_nl);
+        temp = temp.normalizeVector();
         Transformation R = temp.substract(unitL);
         //R.printMatrix();
         //Transformation unitR = R;
@@ -81,7 +83,7 @@ public class Lighting {
         double blue = kd.getB() * Ia.getB() + Ii.getB() * fatti * (kd.getB() * nl + KsVRp);
 
         Color result = new Color(red,green,blue);
-        //System.out.println();
+        //System.out.println(Ii.getR() * fatti);
         return result;
     }
 
@@ -94,9 +96,9 @@ public class Lighting {
     public double distanceBetween2Points(Point3DH p1, Point3DH p2){
         double deltaX = p2.getX() - p1.getX();
         double deltaY = p2.getY() - p1.getY();
-        double deltaZ = p2.getX() - p1.getX();
+        double deltaZ = p2.getZ() - p1.getZ();
 
-        double temp = deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
+        double temp = (deltaX * deltaX) + (deltaY * deltaY) + (deltaZ * deltaZ);
         double result = Math.sqrt(temp);
 
         return result;

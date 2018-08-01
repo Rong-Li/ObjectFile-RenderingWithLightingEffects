@@ -10,7 +10,7 @@ import windowing.graphics.Color;
 public class Polygon extends Chain {
 	private static final int INDEX_STEP_FOR_CLOCKWISE = -1;
 	private static final int INDEX_STEP_FOR_COUNTERCLOCKWISE = 1;
-	private Color lightColor;
+	private Color lightColor = Color.WHITE;
 	
 	private Polygon(Vertex3D... initialVertices) {
 		super(initialVertices);
