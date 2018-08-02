@@ -18,7 +18,6 @@ public class DepthCueingDrawable extends DrawableDecorator {
 
     @Override
     public void setPixel(int x, int y, double z, int argbColor) {
-        //z = 1/z;
 
         if (z >= far && z <= near
                 && x >= 0 && x < 650

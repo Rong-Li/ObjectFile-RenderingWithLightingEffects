@@ -31,6 +31,16 @@ public class FilledPolygonRenderer implements PolygonRenderer {
             polygon = faceshader.shade(thePolygon);
         }
 
+        if(lighted){
+            Vertex3D[] p = new Vertex3D[3];
+            p[0] = vertexshader.shade(polygon, polygon.get(0));
+            p[1] = vertexshader.shade(polygon, polygon.get(1));
+            p[2] = vertexshader.shade(polygon, polygon.get(2));
+            Color maintainedPolygonColor = polygon.getLightColor();
+            polygon = Polygon.makeEnsuringClockwise(p);
+            polygon.setLightColor(maintainedPolygonColor);
+        }
+
 
 
 
@@ -45,19 +55,17 @@ public class FilledPolygonRenderer implements PolygonRenderer {
                 && polygon.get(1).getX() == polygon.get(2).getX()) {
             return;
         }
-        Chain left_chain = polygon.leftChain();
-        Chain right_chain = polygon.rightChain();
+        Chain left_chain = this.polygon.leftChain();
+        Chain right_chain = this.polygon.rightChain();
 
 
         Vertex3D p_top = left_chain.get(0);
         Vertex3D p_bottomLeft = left_chain.get(1);
         Vertex3D p_bottomRight = right_chain.get(1);
 
-        if(lighted){
-            p_top = vertexshader.shade(polygon,p_top);
-            p_bottomLeft = vertexshader.shade(polygon,p_bottomLeft);
-            p_bottomRight = vertexshader.shade(polygon,p_bottomRight);
-        }
+        //System.out.println(polygon.get(2).getColor());
+        //System.out.println(p_top);
+
 
 
         // if having horizontal bottom line
@@ -335,6 +343,8 @@ public class FilledPolygonRenderer implements PolygonRenderer {
         double m_b = deltaB / deltaX;
         double z_slope = deltaZ / deltaX;
 
+
+
         Color addOn = new Color(m_r, m_g, m_b);
 
         int start = (int) Math.round(x_start);
@@ -343,8 +353,10 @@ public class FilledPolygonRenderer implements PolygonRenderer {
             if(start < drawable.getWidth() && y < drawable.getHeight()){
                 if(lighted){
                     Vertex3D vertex = new Vertex3D(start,y,1/z, c1);
-                    this.lightColor = pixelshader.shade(polygon,vertex);
+                    this.lightColor = pixelshader.shade(this.polygon,vertex);
                     drawable.setPixel(start, y, 1/z, c1.multiply(lightColor).asARGB());
+
+                    //drawable.setPixel(start, y, 1/z, c1.asARGB());
                 }
                 else{
                     drawable.setPixel(start, y, 1/z, c1.asARGB());
@@ -357,8 +369,10 @@ public class FilledPolygonRenderer implements PolygonRenderer {
                 if(i < drawable.getWidth() && y < drawable.getHeight()){
                     if(lighted){
                         Vertex3D vertex = new Vertex3D(i,y,1/z, newColor);
-                        this.lightColor = pixelshader.shade(polygon,vertex);
+                        this.lightColor = pixelshader.shade(this.polygon,vertex);
                         drawable.setPixel(i, y, 1/z, newColor.multiply(lightColor).asARGB());
+                        //System.out.println(newColor);
+                        //drawable.setPixel(i, y, 1/z, newColor.asARGB());
                     }
                     else {
                         drawable.setPixel(i, y, 1/z, newColor.asARGB());

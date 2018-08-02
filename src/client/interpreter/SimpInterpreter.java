@@ -476,8 +476,11 @@ public class SimpInterpreter {
         vector = vector.matrixMultiplication(projectedToScreen);
 
         Vertex3D result = new Vertex3D(vector.get(1,1), vector.get(2,1), vector.get(3,1), vertex.getColor());
+        result.setCameraPoint(vertex.getCameraPoint());
         return result;
     }
+
+
 
     public void RenderPolygon(Polygon polygon){
         Point3DH centerPoint3DH = centerPointofPolygon(polygon);
@@ -551,6 +554,7 @@ public class SimpInterpreter {
                 Vertex3D cameraspaceVertex = new Vertex3D(vShaderVertex.getCameraPoint(), vShaderVertex.getColor());
                 lightColor = lighting.light(cameraspaceVertex, polygon.get(0).getColor(), normal, kSpecular, specularExponent);
                 Vertex3D result = new Vertex3D(vShaderVertex.getPoint3D(), vShaderVertex.getColor().multiply(lightColor));
+
                 return result;
             };
 
@@ -567,8 +571,11 @@ public class SimpInterpreter {
 
 
 
+
         for (int i = 0; i < array_clippedZ.size(); i++){
+            //System.out.println("True Camera: " + array_clippedZ.get(i).getPoint3D());
             Vertex3D temp = transformToPerspective(array_clippedZ.get(i));
+            //System.out.println("after perspective: " + temp.getPoint3D());
             array_clippedZ.set(i,temp);
         }
         if(array_clippedZ.size() == 0){
@@ -585,11 +592,20 @@ public class SimpInterpreter {
         }
 
         for (int i = 0; i < array_clippedY.size(); i++){
-            Point3DH cameraSpace = array_clippedY.get(i).getPoint3D();
+            double cameraspaceZ = array_clippedY.get(i).getZ();
+            double cameraspaceX = array_clippedY.get(i).getX() * (-1/cameraspaceZ);
+            double cameraspaceY = array_clippedY.get(i).getY() * (-1/cameraspaceZ);
+            Point3DH cameraSpace = new Point3DH(cameraspaceX,cameraspaceY,1/cameraspaceZ);
+            array_clippedY.get(i).setCameraPoint(cameraSpace);
+            //System.out.println("perspectived: " + array_clippedY.get(i).getPoint3D());
+
+
+
             Vertex3D temp = transformToCamera(array_clippedY.get(i));
-            temp.setCameraPoint(cameraSpace);
+            //System.out.println("cameraspaced: " + temp.getCameraPoint());
+
+
             array_clippedY.set(i,temp);
-            //System.out.println("the points: "+ array_clippedY.get(i).getIntX() + " " + array_clippedY.get(i).getIntY() + " " +array_clippedY.get(i).getZ());
         }
         //System.out.println("");
 
@@ -602,6 +618,7 @@ public class SimpInterpreter {
         if(this.renderStyle == RenderStyle.FILLED){
             List<Polygon> listOfPolygons = Clipper.Triangulation(finalPolygon);
             for (int i = 0; i < listOfPolygons.size(); i++){
+                //System.out.println("cameraspaced: " + listOfPolygons.get(0).get(0).getCameraPoint());
                 filledRenderer.drawPolygon(listOfPolygons.get(i),drawable, faceshader, vertexshader, pixelshader, lighted);
             }
         }

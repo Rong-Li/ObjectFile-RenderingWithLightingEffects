@@ -91,6 +91,7 @@ public class Clipper {
     }
 
     public List<Vertex3D> clipX_toVertexArray(List<Vertex3D> polygon) {
+        //System.out.println("clipped X");
         if (X_outofRangeCompletely(this.xlow, this.xhigh, polygon)) {
             List<Vertex3D> sameArray = new ArrayList<Vertex3D>();
 //            int numberOfEdges = polygon.size();
@@ -299,6 +300,7 @@ public class Clipper {
             vertices[1] = general.get(i+1);
             vertices[2] = general.get(i+2);
             Polygon triangle = Polygon.makeEnsuringClockwise(vertices);
+            //System.out.println(triangle.get(0).getCameraPoint());
             result.add(triangle);
         }
         return result;

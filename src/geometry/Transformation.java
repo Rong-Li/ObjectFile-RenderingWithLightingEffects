@@ -365,6 +365,11 @@ public class Transformation {
         double denominator = Math.sqrt(sum);
         if(denominator == 0){
             System.out.println("denominater is 0!!! becasue of the normalization");
+            Transformation dominatorZeroedVector = new Transformation(3,1);
+            dominatorZeroedVector.set(1,1,1);
+            dominatorZeroedVector.set(2,1,1);
+            dominatorZeroedVector.set(3,1,1);
+            return dominatorZeroedVector;
         }
         Transformation result = new Transformation(this.getRows(), 1);
         for (int i = 1; i < result.getRows()+1; i++){

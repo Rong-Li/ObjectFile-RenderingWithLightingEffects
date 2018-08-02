@@ -78,7 +78,7 @@ public class Lighting {
         }
 
         //v.printMatrix();
-        unitR.printMatrix();
+        //unitR.printMatrix();
         //System.out.println(vr);
 
         double vr_powered = Math.pow(vr,specularExponent);
