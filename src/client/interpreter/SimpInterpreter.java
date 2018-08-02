@@ -544,6 +544,8 @@ public class SimpInterpreter {
             };
         }
 
+
+        //GROURAUD
         else if(shaderStyle == ShaderStyle.GOURAUD){
             faceshader = fShaderPolygon ->{
                 normal = new Halfplane3DH(polygon);
@@ -556,6 +558,25 @@ public class SimpInterpreter {
                 Vertex3D result = new Vertex3D(vShaderVertex.getPoint3D(), vShaderVertex.getColor().multiply(lightColor));
 
                 return result;
+            };
+
+            pixelshader = (pShaderPolygon, pShaderVertex) ->{
+                return pShaderPolygon.getLightColor();
+            };
+        }
+
+
+        //PHONG
+        else if(shaderStyle == ShaderStyle.PHONG){
+            faceshader = fShaderPolygon ->{
+                return fShaderPolygon;
+            };
+
+            vertexshader = (vShaderPolygon, vShaderVertex) ->{
+                normal = new Halfplane3DH(polygon);
+                vShaderVertex.setHasNormal(true);
+                vShaderVertex.setNormal(normal.getPlaneNormal());
+                return vShaderVertex;
             };
 
             pixelshader = (pShaderPolygon, pShaderVertex) ->{

@@ -86,7 +86,7 @@ public class Lighting {
         //System.out.println(specularExponent);
 
         //double KsVRp = ks * vr;
-        //System.out.println(KsVRp);
+        unitR.printMatrix();
 
 
 
