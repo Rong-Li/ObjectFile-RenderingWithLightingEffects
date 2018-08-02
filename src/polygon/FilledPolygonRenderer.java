@@ -1,5 +1,6 @@
 package polygon;
 
+import geometry.Point3DH;
 import geometry.Vertex3D;
 import shading.FaceShader;
 import shading.PixelShader;
@@ -55,6 +56,7 @@ public class FilledPolygonRenderer implements PolygonRenderer {
                 && polygon.get(1).getX() == polygon.get(2).getX()) {
             return;
         }
+
         Chain left_chain = this.polygon.leftChain();
         Chain right_chain = this.polygon.rightChain();
 
@@ -63,8 +65,9 @@ public class FilledPolygonRenderer implements PolygonRenderer {
         Vertex3D p_bottomLeft = left_chain.get(1);
         Vertex3D p_bottomRight = right_chain.get(1);
 
-        //System.out.println(polygon.get(2).getColor());
-        //System.out.println(p_top);
+        System.out.println(p_top.getCameraPoint());
+        System.out.println(p_bottomLeft.getCameraPoint());
+        System.out.println(p_bottomRight.getCameraPoint());
 
 
 
@@ -121,18 +124,21 @@ public class FilledPolygonRenderer implements PolygonRenderer {
         double deltaX1 = p_top.getIntX() - p_bottomLeft.getIntX();
         double deltaY1 = p_top.getIntY() - p_bottomLeft.getIntY();
         Color m1 = DecrementforColors(p_top, p_bottomLeft);
+        Point3DH cameraSpaceM1 = DecrementforCameraSpacePoint(p_top, p_bottomLeft);
         double z_slope1 = DecrementforZ(p_top, p_bottomLeft);
 
         //right short top edge
         double deltaX2 = p_bottomRight.getIntX() - p_top.getIntX();
         double deltaY2 = p_bottomRight.getIntY() - p_top.getIntY();
         Color m2 = DecrementforColors(p_top, p_bottomRight);
+        Point3DH cameraSpaceM2 = DecrementforCameraSpacePoint(p_top, p_bottomRight);
         double z_slope2 = DecrementforZ(p_top, p_bottomRight);
 
         //right short bot edge
         double deltaX2_2 = p_bottomRight.getIntX() - p_bottomLeft.getIntX();
         double deltaY2_2 = p_bottomRight.getIntY() - p_bottomLeft.getIntY();
         Color m2_2 = DecrementforColors(p_bottomRight, p_bottomLeft);
+        Point3DH cameraSpaceM2_2 = DecrementforCameraSpacePoint(p_bottomRight, p_bottomLeft);
         double z_slope2_2 = DecrementforZ(p_bottomRight, p_bottomLeft);
 
         double L_slope = deltaX1 / deltaY1;
@@ -147,27 +153,33 @@ public class FilledPolygonRenderer implements PolygonRenderer {
         Color c2 = p_top.getColor();
         double z1 = p_top.getZ();
         double z2 = p_top.getZ();
+        Point3DH cameraSpace_p1 = p_top.getCameraPoint();
+        Point3DH cameraSpace_p2 = p_top.getCameraPoint();
 
 
         //rendering begin
         while (y >= p_bottomLeft.getIntY()) {
             if (y > p_middle.getIntY()) {
-                blerping_fillPixels_leftToRight(start_point, end_point, y, c1, c2, drawable, z1, z2);
+                blerping_fillPixels_leftToRight(start_point, end_point, y, c1, c2, drawable, z1, z2, cameraSpace_p1, cameraSpace_p2);
                 start_point = start_point - L_slope;
                 end_point = end_point - R_slope;
                 c1 = c1.subtract(m1);
                 c2 = c2.subtract(m2);
                 z1 = z1 - z_slope1;
                 z2 = z2 - z_slope2;
+                cameraSpace_p1 = cameraSpace_p1.subtract(cameraSpaceM1);
+                cameraSpace_p2 = cameraSpace_p2.subtract(cameraSpaceM2);
                 y--;
             } else {
-                blerping_fillPixels_leftToRight(start_point, end_point, y, c1, c2, drawable, z1, z2);
+                blerping_fillPixels_leftToRight(start_point, end_point, y, c1, c2, drawable, z1, z2, cameraSpace_p1, cameraSpace_p2);
                 start_point = start_point - L_slope;
                 end_point = end_point - R2_slope;
                 c1 = c1.subtract(m1);
                 c2 = c2.subtract(m2_2);
                 z1 = z1 - z_slope1;
                 z2 = z2 - z_slope2_2;
+                cameraSpace_p1 = cameraSpace_p1.subtract(cameraSpaceM1);
+                cameraSpace_p2 = cameraSpace_p2.subtract(cameraSpaceM2_2);
                 y--;
             }
         }
@@ -179,17 +191,20 @@ public class FilledPolygonRenderer implements PolygonRenderer {
         double deltaX1_1 = p_top.getIntX() - p_bottomLeft.getIntX();
         double deltaY1_1 = p_top.getIntY() - p_bottomLeft.getIntY();
         Color m1_1 = DecrementforColors(p_top, p_bottomLeft);
+        Point3DH cameraSpaceM1_1 = DecrementforCameraSpacePoint(p_top, p_bottomLeft);
         double z_slope1_1 = DecrementforZ(p_top, p_bottomLeft);
 
 
         double deltaX1_2 = p_bottomRight.getIntX() - p_bottomLeft.getIntX();
         double deltaY1_2 = p_bottomRight.getIntY() - p_bottomLeft.getIntY();
         Color m1_2 = DecrementforColors(p_bottomRight, p_bottomLeft);
+        Point3DH cameraSpaceM1_2 = DecrementforCameraSpacePoint(p_bottomRight, p_bottomLeft);
         double z_slope1_2 = DecrementforZ(p_bottomRight, p_bottomLeft);
 
         double deltaX2 = p_bottomRight.getIntX() - p_top.getIntX();
         double deltaY2 = p_bottomRight.getIntY() - p_top.getIntY();
         Color m2 = DecrementforColors(p_bottomRight, p_top);
+        Point3DH cameraSpaceM2 = DecrementforCameraSpacePoint(p_bottomRight, p_top);
         double z_slope2 = DecrementforZ(p_bottomRight, p_top);
 
 
@@ -206,26 +221,32 @@ public class FilledPolygonRenderer implements PolygonRenderer {
         Color c2 = p_top.getColor();
         double z1 = p_top.getZ();
         double z2 = p_top.getZ();
+        Point3DH cameraSpace_p1 = p_top.getCameraPoint();
+        Point3DH cameraSpace_p2 = p_top.getCameraPoint();
 
         //rendering begin
         while (y >= p_bottomRight.getIntY()) {
             if (y > p_middle.getIntY()) {
-                blerping_fillPixels_leftToRight(start_point, end_point, y, c1, c2, drawable, z1, z2);
+                blerping_fillPixels_leftToRight(start_point, end_point, y, c1, c2, drawable, z1, z2, cameraSpace_p1, cameraSpace_p2);
                 start_point = start_point - L1_slope;
                 end_point = end_point - R_slope;
                 c1 = c1.subtract(m1_1);
                 c2 = c2.subtract(m2);
                 z1 = z1 - z_slope1_1;
                 z2 = z2 - z_slope2;
+                cameraSpace_p1 = cameraSpace_p1.subtract(cameraSpaceM1_1);
+                cameraSpace_p2 = cameraSpace_p2.subtract(cameraSpaceM2);
                 y--;
             } else {
-                blerping_fillPixels_leftToRight(start_point, end_point, y, c1, c2, drawable, z1, z2);
+                blerping_fillPixels_leftToRight(start_point, end_point, y, c1, c2, drawable, z1, z2, cameraSpace_p1, cameraSpace_p2);
                 start_point = start_point - L2_slope;
                 end_point = end_point - R_slope;
                 c1 = c1.subtract(m1_2);
                 c2 = c2.subtract(m2);
                 z1 = z1 - z_slope1_2;
                 z2 = z2 - z_slope2;
+                cameraSpace_p1 = cameraSpace_p1.subtract(cameraSpaceM1_2);
+                cameraSpace_p2 = cameraSpace_p2.subtract(cameraSpaceM2);
                 y--;
             }
         }
@@ -235,11 +256,13 @@ public class FilledPolygonRenderer implements PolygonRenderer {
         double deltaX1 = p_top.getIntX() - p_bottomLeft.getIntX();
         double deltaY1 = p_top.getIntY() - p_bottomLeft.getIntY();
         Color m1 = DecrementforColors(p_top, p_bottomLeft);
+        Point3DH cameraSpaceM1 = DecrementforCameraSpacePoint(p_top, p_bottomLeft);
         double z_slope1 = DecrementforZ(p_top, p_bottomLeft);
 
         double deltaX2 = p_top.getIntX() - p_bottomRight.getIntX();
         double deltaY2 = p_top.getIntY() - p_bottomRight.getIntY();
         Color m2 = DecrementforColors(p_top, p_bottomRight);
+        Point3DH cameraSpaceM2 = DecrementforCameraSpacePoint(p_top, p_bottomRight);
         double z_slope2 = DecrementforZ(p_top, p_bottomRight);
 
         double L_slope = deltaX1 / deltaY1;
@@ -249,18 +272,22 @@ public class FilledPolygonRenderer implements PolygonRenderer {
         int y = p_top.getIntY();
         Color c1 = p_top.getColor();
         Color c2 = p_top.getColor();
+        Point3DH cameraSpace_p1 = p_top.getCameraPoint();
+        Point3DH cameraSpace_p2 = p_top.getCameraPoint();
         double z1 = p_top.getZ();
         double z2 = p_top.getZ();
 
         //rendering begin
         while (y > p_bottomLeft.getIntY()) {
-            blerping_fillPixels_leftToRight(start_point, end_point, y, c1, c2, drawable, z1, z2);
+            blerping_fillPixels_leftToRight(start_point, end_point, y, c1, c2, drawable, z1, z2, cameraSpace_p1, cameraSpace_p2);
             start_point = start_point - L_slope;
             end_point = end_point - R_slope;
             c1 = c1.subtract(m1);
             c2 = c2.subtract(m2);
             z1 = z1 - z_slope1;
             z2 = z2 - z_slope2;
+            cameraSpace_p1 = cameraSpace_p1.subtract(cameraSpaceM1);
+            cameraSpace_p2 = cameraSpace_p2.subtract(cameraSpaceM2);
             y--;
         }
     }
@@ -269,12 +296,14 @@ public class FilledPolygonRenderer implements PolygonRenderer {
         double deltaX1 = p_topLeft.getIntX() - p_bottom.getIntX();
         double deltaY1 = p_topLeft.getIntY() - p_bottom.getIntY();
         Color m1 = DecrementforColors(p_topLeft, p_bottom);
+        Point3DH cameraSpaceM1 = DecrementforCameraSpacePoint(p_topLeft, p_bottom);
         double z_slope1 = DecrementforZ(p_topLeft, p_bottom);
 
 
         double deltaX2 = p_topRight.getIntX() - p_bottom.getIntX();
         double deltaY2 = p_topRight.getIntY() - p_bottom.getIntY();
         Color m2 = DecrementforColors(p_topRight, p_bottom);
+        Point3DH cameraSpaceM2 = DecrementforCameraSpacePoint(p_topRight, p_bottom);
         double z_slope2 = DecrementforZ(p_topRight, p_bottom);
 
         double L_slope = deltaX1 / deltaY1;
@@ -286,10 +315,12 @@ public class FilledPolygonRenderer implements PolygonRenderer {
         Color c2 = p_topRight.getColor();
         double z1 = p_topLeft.getZ();
         double z2 = p_topRight.getZ();
+        Point3DH cameraSpace_p1 = p_topLeft.getCameraPoint();
+        Point3DH cameraSpace_p2 = p_topRight.getCameraPoint();
 
         //rendering begin
         while (y >= p_bottom.getIntY()) {
-            blerping_fillPixels_leftToRight(start_point, end_point, y, c1, c2, drawable, z1, z2);
+            blerping_fillPixels_leftToRight(start_point, end_point, y, c1, c2, drawable, z1, z2, cameraSpace_p1, cameraSpace_p2);
             start_point = start_point - L_slope;
             end_point = end_point - R_slope;
             c1 = c1.subtract(m1);
@@ -297,7 +328,32 @@ public class FilledPolygonRenderer implements PolygonRenderer {
             z1 = z1 - z_slope1;
             z2 = z2 - z_slope2;
             y--;
+            cameraSpace_p1 = cameraSpace_p1.subtract(cameraSpaceM1);
+            cameraSpace_p2 = cameraSpace_p2.subtract(cameraSpaceM2);
         }
+    }
+
+
+    private Point3DH DecrementforCameraSpacePoint(Vertex3D p1, Vertex3D p2){
+        double deltaY = p1.getIntY() - p2.getIntY();
+
+        double x1 = p1.getCameraPoint().getX();
+        double x2 = p2.getCameraPoint().getX();
+        double deltaCameraX = x1 - x2;
+        double mx = deltaCameraX / deltaY;
+
+        double y1 = p1.getCameraPoint().getY();
+        double y2 = p2.getCameraPoint().getY();
+        double deltaCameraY = y1 - y2;
+        double my = deltaCameraY / deltaY;
+
+        double z1 = p1.getCameraPoint().getZ();
+        double z2 = p2.getCameraPoint().getZ();
+        double deltaCameraZ = z1 - z2;
+        double mz = deltaCameraZ / deltaY;
+
+        Point3DH result = new Point3DH(mx,my,mz);
+        return result;
     }
 
 
@@ -330,10 +386,16 @@ public class FilledPolygonRenderer implements PolygonRenderer {
         return result;
     }
 
-    private void blerping_fillPixels_leftToRight(double x_start, double x_end, int y, Color c1, Color c2, Drawable drawable, double z1, double z2) {
+    private void blerping_fillPixels_leftToRight(double x_start, double x_end, int y,
+                                                 Color c1, Color c2, Drawable drawable,
+                                                 double z1, double z2,
+                                                 Point3DH cameraSpace_p1, Point3DH cameraSpace_p2) {
         Color newColor = c1;
         double z = z1;
+        Point3DH newCameraSpacePoint = cameraSpace_p1;
+
         double deltaX = x_end - x_start;
+
         double deltaR = c2.getR() - c1.getR();
         double deltaG = c2.getG() - c1.getG();
         double deltaB = c2.getB() - c1.getB();
@@ -341,7 +403,16 @@ public class FilledPolygonRenderer implements PolygonRenderer {
         double m_r = deltaR / deltaX;
         double m_g = deltaG / deltaX;
         double m_b = deltaB / deltaX;
+
         double z_slope = deltaZ / deltaX;
+
+        double deltaCameraX = cameraSpace_p2.getX() - cameraSpace_p1.getX();
+        double deltaCameraY = cameraSpace_p2.getY() - cameraSpace_p1.getY();
+        double deltaCameraZ = cameraSpace_p2.getZ() - cameraSpace_p1.getZ();
+        double cameraSpaceM_X = deltaCameraX / deltaX;
+        double cameraSpaceM_Y = deltaCameraY / deltaX;
+        double cameraSpaceM_Z = deltaCameraZ / deltaX;
+        Point3DH cameraSpace_addon = new Point3DH(cameraSpaceM_X,cameraSpaceM_Y,cameraSpaceM_Z);
 
 
 
@@ -353,6 +424,7 @@ public class FilledPolygonRenderer implements PolygonRenderer {
             if(start < drawable.getWidth() && y < drawable.getHeight()){
                 if(lighted){
                     Vertex3D vertex = new Vertex3D(start,y,1/z, c1);
+                    vertex.setCameraPoint(newCameraSpacePoint);
                     this.lightColor = pixelshader.shade(this.polygon,vertex);
                     drawable.setPixel(start, y, 1/z, c1.multiply(lightColor).asARGB());
 
@@ -369,6 +441,7 @@ public class FilledPolygonRenderer implements PolygonRenderer {
                 if(i < drawable.getWidth() && y < drawable.getHeight()){
                     if(lighted){
                         Vertex3D vertex = new Vertex3D(i,y,1/z, newColor);
+                        vertex.setCameraPoint(newCameraSpacePoint);
                         this.lightColor = pixelshader.shade(this.polygon,vertex);
                         drawable.setPixel(i, y, 1/z, newColor.multiply(lightColor).asARGB());
                         //System.out.println(newColor);
@@ -380,6 +453,7 @@ public class FilledPolygonRenderer implements PolygonRenderer {
                 }
                 newColor = newColor.add(addOn);
                 z = z + z_slope;
+                newCameraSpacePoint = newCameraSpacePoint.add(cameraSpace_addon);
             }
         }
     }

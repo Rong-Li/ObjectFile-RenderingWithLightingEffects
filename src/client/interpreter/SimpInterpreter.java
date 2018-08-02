@@ -556,6 +556,7 @@ public class SimpInterpreter {
                 Vertex3D cameraspaceVertex = new Vertex3D(vShaderVertex.getCameraPoint(), vShaderVertex.getColor());
                 lightColor = lighting.light(cameraspaceVertex, polygon.get(0).getColor(), normal, kSpecular, specularExponent);
                 Vertex3D result = new Vertex3D(vShaderVertex.getPoint3D(), vShaderVertex.getColor().multiply(lightColor));
+                result.setCameraPoint(vShaderVertex.getCameraPoint());
 
                 return result;
             };
@@ -569,18 +570,20 @@ public class SimpInterpreter {
         //PHONG
         else if(shaderStyle == ShaderStyle.PHONG){
             faceshader = fShaderPolygon ->{
+                normal = new Halfplane3DH(polygon);
                 return fShaderPolygon;
             };
 
             vertexshader = (vShaderPolygon, vShaderVertex) ->{
-                normal = new Halfplane3DH(polygon);
                 vShaderVertex.setHasNormal(true);
                 vShaderVertex.setNormal(normal.getPlaneNormal());
                 return vShaderVertex;
             };
 
             pixelshader = (pShaderPolygon, pShaderVertex) ->{
-                return pShaderPolygon.getLightColor();
+                Vertex3D cameraspaceVertex = new Vertex3D(pShaderVertex.getCameraPoint(), pShaderVertex.getColor());
+                lightColor = lighting.light(cameraspaceVertex, pShaderVertex.getColor(), normal, kSpecular, specularExponent);
+                return lightColor;
             };
         }
 
