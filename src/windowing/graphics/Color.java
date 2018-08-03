@@ -90,6 +90,13 @@ public class Color {
 		double b = getB() * otherColor.getB();
 		return new Color(r, g, b);
 	}
+
+	public Color addNumber(double number){
+        double r = getR() + number;
+        double g = getG() + number;
+        double b = getB() + number;
+        return new Color(r, g, b);
+    }
 	
 	// could implement as: this.scale(thisAlpha).add(otherColor.scale(1-thisAlpha))
 	public Color blendInto(double thisAlpha, Color otherColor) {

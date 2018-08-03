@@ -85,11 +85,16 @@ class ObjReader {
 
         for (int i = 0; i < objNormals.size(); i++){
             Point3DH normal = objNormals.get(i);
-            Vertex3D v_normal = new Vertex3D(normal,Color.WHITE);
-            Transformation vector = Transformation.vertexToVector(v_normal);
-            vector = vector.matrixMultiplication(interpreter.getCTM());
+            Transformation vector = new Transformation(1,4);
+            vector.set(1,1,normal.getX());
+            vector.set(1,2,normal.getY());
+            vector.set(1,3,normal.getZ());
+            vector.set(1,4,normal.getW());
+            Transformation temp = interpreter.getCTM().InversedMatrix();
+            vector = temp.matrixMultiplication(vector);
+            //vector = vector.matrixMultiplication(interpreter.getCTM());
             //vector.printMatrix();
-            Point3DH newPoint = new Point3DH(vector.get(1,1), vector.get(2,1), vector.get(3,1));
+            Point3DH newPoint = new Point3DH(vector.get(1,1), vector.get(1,2), vector.get(1,3));
             transformedObjNormals.add(newPoint);
         }
     }

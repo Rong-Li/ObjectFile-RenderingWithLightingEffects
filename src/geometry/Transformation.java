@@ -364,7 +364,7 @@ public class Transformation {
         }
         double denominator = Math.sqrt(sum);
         if(denominator == 0){
-            System.out.println("denominater is 0!!! becasue of the normalization");
+            //System.out.println("denominater is 0!!! becasue of the normalization");
             Transformation dominatorZeroedVector = new Transformation(3,1);
             dominatorZeroedVector.set(1,1,1);
             dominatorZeroedVector.set(2,1,1);
@@ -384,29 +384,35 @@ public class Transformation {
         if (this.getRows() != 3 || vector.getRows() != 3){
             System.out.println("wrong size");
         }
-        double result = 0;
-        for (int i = 1; i < this.getRows() + 1; i++){
-            double temp = this.get(i,1) * vector.get(i,1);
-            result = result + temp;
-        }
+//        double result = 0;
+//        for (int i = 1; i < this.getRows() + 1; i++){
+//            double temp = this.get(i,1) * vector.get(i,1);
+//            result = result + temp;
+//        }
+        double p1 = this.get(1,1) * vector.get(1,1);
+        double p2 = this.get(2,1) * vector.get(2,1);
+        double p3 = this.get(3,1) * vector.get(3,1);
+        double result = p1 + p2 + p3;
         return result;
     }
 
     public Transformation scale(double scaler){
         Transformation result = new Transformation(this.getRows(),this.getCols());
-        for (int i = 1; i < result.getRows()+1; i++){
-            double temp = scaler * this.get(i,1);
-            result.set(i,1,temp);
-        }
+//        for (int i = 1; i < result.getRows()+1; i++){
+//            double temp = scaler * this.get(i,1);
+//            result.set(i,1,temp);
+//        }
+        result.set(1,1, this.get(1,1) * scaler);
+        result.set(2,1, this.get(2,1) * scaler);
+        result.set(3,1, this.get(3,1) * scaler);
         return result;
     }
     //this - a
     public Transformation substract(Transformation a){
         Transformation result = new Transformation(this.getRows(),this.getCols());
-        for (int i = 1; i < result.getRows()+1; i++){
-            double temp = this.get(i,1) - a.get(i,1);
-            result.set(i,1,temp);
-        }
+        result.set(1,1, this.get(1,1) - a.get(1,1));
+        result.set(2,1, this.get(2,1) - a.get(2,1));
+        result.set(3,1, this.get(3,1) - a.get(3,1));
         return result;
     }
 

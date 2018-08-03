@@ -26,6 +26,15 @@ public class Halfplane3DH {
     //if we are using average normal of each vertex
     public Halfplane3DH(Transformation vector){
         this.normalVector = vector;
+        this.planeNormal = new Point3DH(vector.get(1,1), vector.get(2,1), vector.get(3,1) );
+    }
+
+    public Halfplane3DH(Point3DH normal){
+        this.planeNormal = normal;
+        this.normalVector = new Transformation(3,1);
+        this.normalVector.set(1,1,normal.getX());
+        this.normalVector.set(2,1,normal.getY());
+        this.normalVector.set(3,1,normal.getZ());
     }
 
     public Point3DH getNormalFromPolygon(Polygon polygon){

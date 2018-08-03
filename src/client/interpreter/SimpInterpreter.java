@@ -59,13 +59,14 @@ public class SimpInterpreter {
     private VertexShader vertexshader;
     private ShaderStyle shaderStyle;
     private Light light;
+    private List<Light> listOfLights= new ArrayList<>();
     private Point3DH lightOrigin;
     private double kSpecular = 0.3;
     private double specularExponent = 8;
     private Color lightColor;
     private Halfplane3DH normal;
     private boolean thePolygonhHasnormal = false;
-    private boolean lighted = false;
+    private boolean lighted = true;
 
     public enum RenderStyle {
         FILLED,
@@ -90,6 +91,7 @@ public class SimpInterpreter {
         reader = new LineBasedReader(filename);
         readerStack = new Stack<>();
         renderStyle = RenderStyle.FILLED;
+        shaderStyle = ShaderStyle.PHONG;
         this.matrixStack = new Stack<>();
     }
 
@@ -179,6 +181,7 @@ public class SimpInterpreter {
         Point3DH resultLocation = new Point3DH(vector.get(1,1), vector.get(2,1), vector.get(3,1));
 
         this.light = new Light(I_light,resultLocation, A, B);
+        this.listOfLights.add(light);
     }
 
     private void interpretObj(String[] tokens) {
@@ -466,6 +469,10 @@ public class SimpInterpreter {
         vector = vector.homogeneousTransfer_4X1();
 
         Vertex3D result = new Vertex3D(vector.get(1,1), vector.get(2,1), 1/z_toKeep, vertex.getColor());
+        if(vertex.isHasNormal()){
+            result.setHasNormal(true);
+            result.setNormal(vertex.getNormal());
+        }
         return result;
 
     }
@@ -477,6 +484,10 @@ public class SimpInterpreter {
 
         Vertex3D result = new Vertex3D(vector.get(1,1), vector.get(2,1), vector.get(3,1), vertex.getColor());
         result.setCameraPoint(vertex.getCameraPoint());
+        if(vertex.isHasNormal()){
+            result.setHasNormal(true);
+            result.setNormal(vertex.getNormal());
+        }
         return result;
     }
 
@@ -484,8 +495,10 @@ public class SimpInterpreter {
 
     public void RenderPolygon(Polygon polygon){
         Point3DH centerPoint3DH = centerPointofPolygon(polygon);
-        Vertex3D centerPoint = new Vertex3D(centerPoint3DH, polygon.get(1).getColor());
-        Lighting lighting = new Lighting(this.light, ambientLight);
+        //System.out.println(polygon.get(0).getNormal());
+        Vertex3D centerPoint = new Vertex3D(centerPoint3DH, defaultColor);
+        Lighting lighting = new Lighting(this.listOfLights, ambientLight);
+        normal = new Halfplane3DH(polygon);
         int sum = 0;
         for (int i = 0; i < polygon.length(); i++){
             if (polygon.get(i).isHasNormal() == true){
@@ -497,45 +510,34 @@ public class SimpInterpreter {
         }
 
 
+
+
+
         if(shaderStyle == ShaderStyle.FLAT){
             faceshader = fShaderPolygon ->{
                 if (thePolygonhHasnormal == true){
-                    if (polygon.length() == 3){
-                        Point3DH p1 = polygon.get(0).getNormal();
-                        Point3DH p2 = polygon.get(1).getNormal();
-                        Point3DH p3 = polygon.get(2).getNormal();
-                        Transformation n = new Transformation(3,1);
-                        n.set(1,1,(p1.getX() + p2.getX() + p3.getX())/3);
-                        n.set(2,1,(p1.getY() + p2.getY() + p3.getY())/3);
-                        n.set(3,1,(p1.getZ() + p2.getZ() + p3.getZ())/3);
-                        normal = new Halfplane3DH(n);
-
-                    }
-                    else{
-                        Point3DH p1 = polygon.get(0).getNormal();
-                        Point3DH p2 = polygon.get(1).getNormal();
-                        Point3DH p3 = polygon.get(2).getNormal();
-                        Point3DH p4 = polygon.get(3).getNormal();
-                        Transformation n = new Transformation(3,1);
-                        n.set(1,1,(p1.getX() + p2.getX() + p3.getX() + p4.getX())/4);
-                        n.set(2,1,(p1.getY() + p2.getY() + p3.getY() + p4.getY())/4);
-                        n.set(3,1,(p1.getZ() + p2.getZ() + p3.getZ() + p4.getZ())/4);
-                        normal = new Halfplane3DH(n);
-                    }
-
+                    Point3DH p1 = polygon.get(0).getNormal();
+                    Point3DH p2 = polygon.get(1).getNormal();
+                    Point3DH p3 = polygon.get(2).getNormal();
+                    Transformation n = new Transformation(3,1);
+                    n.set(1,1,(p1.getX() + p2.getX() + p3.getX())/3);
+                    n.set(2,1,(p1.getY() + p2.getY() + p3.getY())/3);
+                    n.set(3,1,(p1.getZ() + p2.getZ() + p3.getZ())/3);
+                    normal = new Halfplane3DH(n);
                 }
                 else {
                     normal = new Halfplane3DH(polygon);
                 }
 
 
-                lightColor = lighting.light(centerPoint, polygon.get(0).getColor(), normal, kSpecular, specularExponent);
+                lightColor = lighting.light(centerPoint, defaultColor, normal, kSpecular, specularExponent);
                 Polygon result = fShaderPolygon;
                 result.setLightColor(lightColor);
                 return result;
             };
 
             vertexshader = (vShaderPolygon, vShaderVertex) ->{
+                vShaderVertex.setNormal(normal.getPlaneNormal());
                 return vShaderVertex;
             };
 
@@ -543,6 +545,9 @@ public class SimpInterpreter {
                 return pShaderPolygon.getLightColor();
             };
         }
+
+
+
 
 
         //GROURAUD
@@ -553,18 +558,32 @@ public class SimpInterpreter {
             };
 
             vertexshader = (vShaderPolygon, vShaderVertex) ->{
-                Vertex3D cameraspaceVertex = new Vertex3D(vShaderVertex.getCameraPoint(), vShaderVertex.getColor());
-                lightColor = lighting.light(cameraspaceVertex, polygon.get(0).getColor(), normal, kSpecular, specularExponent);
-                Vertex3D result = new Vertex3D(vShaderVertex.getPoint3D(), vShaderVertex.getColor().multiply(lightColor));
-                result.setCameraPoint(vShaderVertex.getCameraPoint());
-
-                return result;
+                if (vShaderVertex.isHasNormal() == true){
+                    normal = new Halfplane3DH(vShaderVertex.getNormal());
+                    Vertex3D cameraspaceVertex = new Vertex3D(vShaderVertex.getCameraPoint(), vShaderVertex.getColor());
+                    lightColor = lighting.light(cameraspaceVertex, polygon.get(0).getColor(), normal, kSpecular, specularExponent);
+                    Vertex3D result = new Vertex3D(vShaderVertex.getPoint3D(), vShaderVertex.getColor().multiply(lightColor));
+                    result.setCameraPoint(vShaderVertex.getCameraPoint());
+                    result.setHasNormal(true);
+                    result.setNormal(vShaderVertex.getNormal());
+                    return result;
+                }
+                else{
+                    Vertex3D cameraspaceVertex = new Vertex3D(vShaderVertex.getCameraPoint(), vShaderVertex.getColor());
+                    lightColor = lighting.light(cameraspaceVertex, polygon.get(0).getColor(), normal, kSpecular, specularExponent);
+                    Vertex3D result = new Vertex3D(vShaderVertex.getPoint3D(), vShaderVertex.getColor().multiply(lightColor));
+                    result.setCameraPoint(vShaderVertex.getCameraPoint());
+                    result.setNormal(normal.getPlaneNormal());
+                    return result;
+                }
             };
 
             pixelshader = (pShaderPolygon, pShaderVertex) ->{
                 return pShaderPolygon.getLightColor();
             };
         }
+
+
 
 
         //PHONG
@@ -575,14 +594,20 @@ public class SimpInterpreter {
             };
 
             vertexshader = (vShaderPolygon, vShaderVertex) ->{
-                vShaderVertex.setHasNormal(true);
-                vShaderVertex.setNormal(normal.getPlaneNormal());
-                return vShaderVertex;
+                if (vShaderVertex.isHasNormal() == true){
+                    return vShaderVertex;
+                }
+                else{
+                    //vShaderVertex.setHasNormal(true);
+                    vShaderVertex.setNormal(normal.getPlaneNormal());
+                    return vShaderVertex;
+                }
             };
 
             pixelshader = (pShaderPolygon, pShaderVertex) ->{
+                Halfplane3DH theNormal = new Halfplane3DH(pShaderVertex.getNormal());
                 Vertex3D cameraspaceVertex = new Vertex3D(pShaderVertex.getCameraPoint(), pShaderVertex.getColor());
-                lightColor = lighting.light(cameraspaceVertex, pShaderVertex.getColor(), normal, kSpecular, specularExponent);
+                lightColor = lighting.light(cameraspaceVertex, pShaderVertex.getColor(), theNormal, kSpecular, specularExponent);
                 return lightColor;
             };
         }
@@ -621,11 +646,12 @@ public class SimpInterpreter {
             double cameraspaceY = array_clippedY.get(i).getY() * (-1/cameraspaceZ);
             Point3DH cameraSpace = new Point3DH(cameraspaceX,cameraspaceY,1/cameraspaceZ);
             array_clippedY.get(i).setCameraPoint(cameraSpace);
-            //System.out.println("perspectived: " + array_clippedY.get(i).getPoint3D());
-
 
 
             Vertex3D temp = transformToCamera(array_clippedY.get(i));
+            if(!temp.isHasNormal()){
+                temp.setNormal(normal.getPlaneNormal());
+            }
             //System.out.println("cameraspaced: " + temp.getCameraPoint());
 
 
@@ -642,7 +668,6 @@ public class SimpInterpreter {
         if(this.renderStyle == RenderStyle.FILLED){
             List<Polygon> listOfPolygons = Clipper.Triangulation(finalPolygon);
             for (int i = 0; i < listOfPolygons.size(); i++){
-                //System.out.println("cameraspaced: " + listOfPolygons.get(0).get(0).getCameraPoint());
                 filledRenderer.drawPolygon(listOfPolygons.get(i),drawable, faceshader, vertexshader, pixelshader, lighted);
             }
         }

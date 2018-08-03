@@ -33,20 +33,4 @@ public class Light {
         return fattB;
     }
 
-    //setters
-    public void setIntensity(Color intensity) {
-        this.intensity = intensity;
-    }
-
-    public void setCameraSpaceLocation(Point3DH cameraSpaceLocation) {
-        this.cameraSpaceLocation = cameraSpaceLocation;
-    }
-
-    public void setFattA(double fattA) {
-        this.fattA = fattA;
-    }
-
-    public void setFattB(double fattB) {
-        this.fattB = fattB;
-    }
 }
